@@ -6,7 +6,7 @@ Lets a person get an AI-written brief for a chosen combination of options withou
 ## Requirements
 
 ### Requirement: Prompt for a selection
-The Selection page SHALL offer a prompt for the current selection, containing for each selected node its title, body and sources, plus the conflicts, the missing requirements and the undecided decisions. The prompt SHALL be shown in a collapsible box with a button that copies it.
+The Design page SHALL offer a prompt for the current selection, containing for each selected node its title, body and sources, plus the conflicts, the missing requirements and the undecided decisions. The prompt SHALL be shown in a collapsible box with a button that copies it.
 
 #### Scenario: Prompt content
 - **WHEN** `gantry/corexy` is selected and the prompt box is opened
@@ -43,7 +43,7 @@ A brief SHALL be a Markdown file in `briefs/` whose frontmatter records the sele
 - **THEN** it fails with a message naming the id and writes nothing
 
 ### Requirement: Showing a cached brief
-When a brief exists for the current selection, the Selection page SHALL show it, rendered as Markdown, above the deterministic summary. If the node-content hash in the brief differs from the current content of the selected nodes, the brief SHALL be shown marked as stale. When no brief exists the prompt box SHALL be shown.
+When a brief exists for the current selection, the Design page SHALL show it, rendered as Markdown, below the diagram and above the deterministic summary. If the node-content hash in the brief differs from the current content of the selected nodes, the brief SHALL be shown marked as stale. When no brief exists the prompt box SHALL be shown.
 
 #### Scenario: Fresh brief
 - **WHEN** a brief exists for the selection and the selected nodes are unchanged

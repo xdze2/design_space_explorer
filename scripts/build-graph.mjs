@@ -47,6 +47,9 @@ function validate(nodes) {
     if (n.confidence !== undefined && !CONFIDENCES.includes(n.confidence)) {
       errors.push(`${n.id}: confidence must be one of ${CONFIDENCES.join(', ')}`);
     }
+    if (n.slot !== undefined && (typeof n.slot !== 'string' || !n.slot.trim())) {
+      errors.push(`${n.id}: slot must be a non-empty string`);
+    }
     for (const field of REF_FIELDS) {
       if (n[field] === undefined) continue;
       if (!isStringList(n[field])) {

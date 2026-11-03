@@ -22,10 +22,14 @@ Out of scope: more nodes, images and per-node drawings, AI page-writing pipeline
 - `node-slots`: the optional `slot` field on nodes, its validation and its use to group the diagram.
 
 ### Modified Capabilities
-<!-- openspec/specs/ is still empty: `selection-workspace` (selection-page) and `item-modal` are unarchived deltas. This change supersedes their panel, modal and Browse requirements; archive those first, then sync this one over them. -->
+- `selection-workspace`: the panel and Browse button are removed; the Selection page becomes Design; URL page names change.
+- `item-modal`: all requirements removed; node detail moves to the drawer and main pane.
+- `graph-viewer`: Browse view becomes the Graph page with a main pane; the Select view is removed.
+- `selection-brief`: the prompt and cached brief appear on the Design page.
 
 ## Impact
 
+- Main specs: delta specs for the four modified capabilities above.
 - `viewer/`: `app.js` (routes, layout), `hash.js` (pages `design` and `graph`, legacy aliases), new `diagram.js`, `views/tray.js`, `views/drawer.js`, `views/design.js` (from `selection.js`), `views/graph.js` (from `browse.js`); remove `views/panel.js` and `views/modal.js`; `style.css`.
 - `scripts/build-graph.mjs`: validate and pass through `slot`. Add `slot` to the 5 decision files in `graph/`, then rebuild `graph.json`.
 - Mermaid loaded lazily from a pinned CDN version; the page still works without it.

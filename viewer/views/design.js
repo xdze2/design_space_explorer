@@ -2,6 +2,7 @@ import { analyze, undecided, toggle } from '../select.js';
 import { renderMarkdown } from '../markdown.js';
 import { buildHash } from '../hash.js';
 import { el } from '../dom.js';
+import { buildDiagram, boxId } from '../diagram.js';
 import { selectionKey, contentHash, buildPrompt, parseBrief } from '../brief.js';
 
 async function fetchText(url) {
@@ -60,14 +61,56 @@ async function fillBrief(slot, graph, pick) {
   if ((!brief || brief.stale) && template) slot.append(promptBox(buildPrompt(template, graph, pick)));
 }
 
+const MERMAID = 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+let mermaidLoad;
+
+// Loaded once, on first Design render. A failure is not cached, so a later render can retry.
+function loadMermaid() {
+  mermaidLoad ??= import(MERMAID).then((m) => {
+    m.default.initialize({ startOnLoad: false, securityLevel: 'strict' });
+    return m.default;
+  }).catch((e) => {
+    mermaidLoad = null;
+    throw e;
+  });
+  return mermaidLoad;
+}
+
+let renders = 0;
+
+async function fillDiagram(holder, graph, route) {
+  const source = buildDiagram(graph, route.pick);
+  try {
+    const mermaid = await loadMermaid();
+    const { svg } = await mermaid.render(`diagram-${renders++}`, source);
+    holder.innerHTML = svg;
+    for (const d of graph.nodes.filter((n) => n.type === 'decision')) {
+      const box = holder.querySelector(`[id*="flowchart-${boxId(graph, d.id)}-"]`);
+      if (!box) continue;
+      box.classList.add('clickable');
+      box.addEventListener('click', () => {
+        location.hash = buildHash('design', { pick: route.pick, view: d.id });
+      });
+    }
+  } catch {
+    holder.replaceChildren(
+      el('p', { class: 'notice' }, 'The diagram could not be drawn (Mermaid failed to load). Showing its source.'),
+      el('pre', {}, source));
+  }
+}
+
 export function render(graph, { pick, view }) {
   const { missing, conflicts } = analyze(graph, pick);
   const title = (id) => graph.byId.get(id)?.title ?? id;
-  const browse = (id) => el('a', { href: buildHash('selection', { pick, view: id }) }, title(id));
-  const page = el('div', { class: 'selection' }, el('h2', {}, 'Current selection'));
+  const browse = (id) => el('a', { href: buildHash('design', { pick, view: id }) }, title(id));
+  const page = el('div', { class: 'design' }, el('h2', {}, 'Design'));
+  const holder = el('div', { class: 'diagram', 'aria-label': 'Block diagram of the design' }, 'Drawing the diagram…');
+  page.append(holder);
+  fillDiagram(holder, graph, { pick, view });
 
   if (!pick.length) {
-    page.append(el('p', {}, 'Nothing selected yet. Choose options in the panel.'));
+    page.append(el('p', {}, 'Nothing selected yet. Click a box in the diagram, or open the ',
+      el('a', { href: buildHash('graph', { pick }) }, 'Graph'), ' page, to start choosing.'));
   } else {
     const slot = el('div', { class: 'brief-slot' });
     page.append(slot);
@@ -85,7 +128,7 @@ export function render(graph, { pick, view }) {
       el('h3', {}, 'Required, not selected'),
       el('ul', { class: 'missing' }, ...[...missing].map(([id, by]) =>
         el('li', {},
-          el('a', { href: buildHash('selection', { pick: toggle(graph, pick, id), view }) }, `Select ${title(id)}`),
+          el('a', { href: buildHash('design', { pick: toggle(graph, pick, id), view }) }, `Select ${title(id)}`),
           ` (required by ${by.map(title).join(', ')})`))),
     );
   }

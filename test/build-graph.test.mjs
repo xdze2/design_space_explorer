@@ -167,3 +167,29 @@ test('excludes is symmetric in the output', () => {
     f.cleanup();
   }
 });
+
+test('slot is passed through and optional', () => {
+  const f = fixture({
+    'root.md': ROOT,
+    'a.md': node(['title: A', 'type: decision', 'parent: root', 'sources: [user]', 'slot: Motion']),
+    'b.md': node(['title: B', 'type: decision', 'parent: root', 'sources: [user]']),
+  });
+  try {
+    const { errors } = buildGraph(f.graphDir, f.out);
+    assert.deepEqual(errors, []);
+    const byId = Object.fromEntries(JSON.parse(readFileSync(f.out, 'utf8')).nodes.map((n) => [n.id, n]));
+    assert.equal(byId.a.slot, 'Motion');
+    assert.ok(!('slot' in byId.b));
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('invalid slot fails and names the node', () => {
+  for (const slot of ['[a, b]', '""']) {
+    expectFailure(
+      { 'root.md': ROOT, 'a.md': node(['title: A', 'type: decision', 'parent: root', 'sources: [user]', `slot: ${slot}`]) },
+      /^a: slot/,
+    );
+  }
+});

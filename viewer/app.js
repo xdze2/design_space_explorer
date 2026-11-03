@@ -1,13 +1,14 @@
 import { parseHash, buildHash, DEFAULT_HASH } from './hash.js';
-import { render as renderBrowse } from './views/browse.js';
-import { render as renderSelection } from './views/selection.js';
-import { render as renderPanel } from './views/panel.js';
-import { render as renderModal, dispose as disposeModal } from './views/modal.js';
+import { render as renderGraph } from './views/graph.js';
+import { render as renderDesign } from './views/design.js';
+import { render as renderTray } from './views/tray.js';
+import { render as renderNode } from './views/node.js';
 import { el } from './dom.js';
 
-const pages = { browse: renderBrowse, selection: renderSelection };
+const pages = { graph: renderGraph, design: renderDesign };
 const app = document.getElementById('app');
 let graph;
+let closeHref = null;
 
 function show(...nodes) {
   app.replaceChildren(...nodes);
@@ -37,18 +38,26 @@ function route() {
     ? el('p', { class: 'notice' }, `Ignored unknown node id: ${unknown.join(', ')}`)
     : '';
   // Header links keep the selection.
-  document.getElementById('nav-selection').href = buildHash('selection', { pick });
-  document.getElementById('nav-browse').href = buildHash('browse', { pick });
+  document.getElementById('nav-design').href = buildHash('design', { pick });
+  document.getElementById('nav-graph').href = buildHash('graph', { pick });
   const main = el('div', { class: 'main' }, notice, pages[page](graph, route));
-  const layout = page === 'selection'
-    ? el('div', { class: 'layout' }, renderPanel(graph, route), main)
-    : el('div', { class: 'layout single' }, main);
+  let layout = el('div', { class: 'layout single' }, main);
+  closeHref = null;
+  if (page === 'design' && view) {
+    // The drawer sits beside the page, which stays rendered and clickable.
+    closeHref = buildHash('design', { pick });
+    const close = el('a', { class: 'close', href: closeHref, 'aria-label': 'Close' }, '×');
+    const drawer = el('aside', { class: 'drawer', 'aria-label': graph.byId.get(view).title }, close, renderNode(graph, route));
+    layout = el('div', { class: 'layout' }, main, drawer);
+  }
   const y = scrollY;
-  show(layout);
-  if (view) app.append(renderModal(graph, route));
-  else disposeModal();
+  show(renderTray(graph, route), layout);
   scrollTo(0, y);
 }
+
+addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && closeHref) location.hash = closeHref;
+});
 
 try {
   graph = await load();
