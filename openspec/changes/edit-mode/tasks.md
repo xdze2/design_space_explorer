@@ -11,8 +11,8 @@
 
 ## 3. Viewer controls
 
-- [ ] 3.1 Add `viewer/api.js` (`probe`, `saveBrief`, `requestBrief`, `listRequests`; probe never throws) and the edit block in `viewer/views/selection.js`: paste box with optional model field and save button, "Request brief" button, list of pending requests. Verify in headless Chrome against `npm run serve -- --edit`: paste then the brief appears, request then the pending entry appears
-- [ ] 3.2 Check the static case: against `npm run serve` (no `--edit`) the Selection page has no edit block and no error, and the existing brief and prompt box still work. Verify in headless Chrome DOM output
+- [ ] 3.1 Add `viewer/api.js` (`probe`, `saveBrief`, `requestBrief`, `listRequests`; probe never throws) and the edit block in `viewer/views/design.js`: paste box with optional model field and save button, "Request brief" button, list of pending requests. Verify in headless Chrome against `npm run serve -- --edit`: paste then the brief appears, request then the pending entry appears
+- [ ] 3.2 Check the static case: against `npm run serve` (no `--edit`) the Design page has no edit block and no error, and the existing brief and prompt box still work. Verify in headless Chrome DOM output
 
 ## 4. Claude Code command and docs
 

@@ -36,7 +36,7 @@ Anything else under `/api/` is 404. Request bodies are capped (1 MB).
 **Claude Code loop.** `.claude/commands/brief.md` tells Claude Code: list `requests/`; for each, read the prompt, write the brief following it, save it with `npm run brief -- save <ids> <file> --model <model name>`, which also deletes the matching request. The page lists pending requests and, after a refresh, shows the brief. No watching or push in v1.
 *Alternative:* a file watcher that pings Claude Code. Rejected: there is no way to trigger it from outside, and a manual "process the pending briefs" is fine for a solo flow.
 
-**Viewer side.** `viewer/api.js` exports `probe()` (cached `GET /api/status`, false on any failure), `saveBrief(pick, text, model)`, `requestBrief(pick)` and `listRequests()`. `views/selection.js` shows the edit block only when `probe()` is true. After a successful call the page re-renders from the hash (no hidden state). Pages stay pure functions of `(graph, params, pick)`, with the probe result and the brief data loaded before render.
+**Viewer side.** `viewer/api.js` exports `probe()` (cached `GET /api/status`, false on any failure), `saveBrief(pick, text, model)`, `requestBrief(pick)` and `listRequests()`. `views/design.js` shows the edit block only when `probe()` is true. After a successful call the page re-renders from the hash (no hidden state). Pages stay pure functions of `(graph, params, pick)`, with the probe result and the brief data loaded before render.
 
 ## Risks / Trade-offs
 

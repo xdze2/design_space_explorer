@@ -8,7 +8,7 @@ Briefs (see `selection-brief`) can only be saved from the command line, and ther
 
 - Add an **edit mode** to the local server: `npm run serve -- --edit` enables a few write endpoints under `/api/`. Without the flag the server stays read-only, like GitHub Pages.
 - The viewer probes `/api/status` at load; edit controls appear only if it answers. On a static host it returns 404 and the viewer is unchanged.
-- First edit features, both on the Selection page:
+- First edit features, both on the Design page:
   - **Paste**: a box to paste a brief written by an AI; the server saves it through `saveBrief`.
   - **Request**: a "Request brief" button that writes the prompt to `requests/<key>.md`. A project slash command `/brief` tells Claude Code to process pending requests (write the brief, update the index, delete the request). The page lists pending requests and shows the brief after a refresh.
 - Add a **data root** option, `--data <dir>` (default: the repository root). Server write paths and the data files the viewer loads go through it, so a separate data repository per topic can be used later.
@@ -31,6 +31,6 @@ Out of scope:
 
 - `scripts/serve.mjs`: argument parsing (`--edit`, `--data`, port), `/api/` handlers, host and origin checks. Today the port is the first positional argument; keep that working.
 - `scripts/brief.mjs`: `saveBrief` is called from the server (already exported by `selection-brief`).
-- `viewer/`: an `api.js` helper (probe and calls), edit controls in `views/selection.js`.
+- `viewer/`: an `api.js` helper (probe and calls), edit controls in `views/design.js`.
 - New: `.claude/commands/brief.md`, a `requests/` folder (git-ignored: transient), tests for the server.
 - `README.md`: an "Edit mode" section.

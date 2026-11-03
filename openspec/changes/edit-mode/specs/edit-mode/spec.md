@@ -22,14 +22,14 @@ The viewer SHALL probe the status endpoint at load and SHALL show edit controls 
 
 #### Scenario: Static host
 - **WHEN** the status endpoint returns 404
-- **THEN** the Selection page shows no paste box and no request button, and no error
+- **THEN** the Design page shows no paste box and no request button, and no error
 
 #### Scenario: Edit server
 - **WHEN** the status endpoint answers
-- **THEN** the Selection page shows the paste box and the request button
+- **THEN** the Design page shows the paste box and the request button
 
 ### Requirement: Paste a brief
-In edit mode the Selection page SHALL let the user paste a brief for the current selection and an optional model name, and save it. The saved brief SHALL be identical to one saved by the save command for the same selection.
+In edit mode the Design page SHALL let the user paste a brief for the current selection and an optional model name, and save it. The saved brief SHALL be identical to one saved by the save command for the same selection.
 
 #### Scenario: Paste and save
 - **WHEN** the user pastes a Markdown text for `gantry/corexy` and saves
@@ -44,7 +44,7 @@ In edit mode the Selection page SHALL let the user paste a brief for the current
 - **THEN** it is rejected and nothing is written
 
 ### Requirement: Request a brief
-In edit mode the Selection page SHALL let the user request a brief for the current selection. A request SHALL be a file in `requests/` named by the selection key and containing the prompt, and SHALL list the selection and the prompt version. The page SHALL show which requests are pending.
+In edit mode the Design page SHALL let the user request a brief for the current selection. A request SHALL be a file in `requests/` named by the selection key and containing the prompt, and SHALL list the selection and the prompt version. The page SHALL show which requests are pending.
 
 #### Scenario: Create a request
 - **WHEN** the user requests a brief for `gantry/corexy`
