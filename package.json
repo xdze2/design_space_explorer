@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-graph.mjs",
+    "serve": "node scripts/serve.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {

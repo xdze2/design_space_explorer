@@ -49,3 +49,19 @@ npm test
 ```
 
 The build prints every error and writes nothing if validation fails.
+
+## Viewer
+
+A static page (plain HTML and ES modules, no build step) to browse the graph and try combinations of options.
+
+```sh
+npm run build   # refresh graph.json
+npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
+```
+
+The view and its state live in the URL hash, so reload and sharing restore them:
+
+- `#/browse/<node-id>`: tree and detail pane, e.g. `#/browse/gantry/corexy`
+- `#/select?pick=<id>,<id>`: Select view with the given options chosen, e.g. `#/select?pick=gantry/corexy,drive/gt2-belt`
+
+Unknown ids in the hash are ignored with a notice.
