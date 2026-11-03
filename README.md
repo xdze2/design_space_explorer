@@ -59,15 +59,17 @@ npm run build   # refresh graph.json
 npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
 ```
 
-The page has a selection panel on the left (always visible) and a main area:
+Two pages:
 
-- **Selection**: the current selection with each chosen option's text, plus conflicts, required-but-unselected options and undecided decisions.
-- **Browse**: the raw node-by-node view (tree and detail pane), with a button to select or remove an option.
+- **Selection**: a panel on the left (toggle an option, `i` opens its detail, **Reset** clears the selection) and the current selection with each chosen option's text, plus conflicts, required-but-unselected options and undecided decisions.
+- **Browse**: a full-width overview of the whole graph as an expanded tree, chosen options marked. No panel.
 
-The page and the selection live in the URL hash, independently, so reload and sharing restore them:
+Node detail opens in a **modal** over the current page (Esc, the close button or a click outside closes it). It shows the text, sources and `requires`/`excludes`/`compatible_with` links, plus a select/remove button for options. The title in the header goes home (`#/selection`, empty selection).
 
-- `#/selection?pick=<id>,<id>`, e.g. `#/selection?pick=gantry/corexy,drive/gt2-belt`
-- `#/browse/<node-id>?pick=<id>,<id>`, e.g. `#/browse/gantry/corexy`
+The page, the selection and the open node live in the URL hash, independently, so reload, sharing and the back button work:
+
+- `#/selection?pick=<id>,<id>&view=<id>`, e.g. `#/selection?pick=gantry/corexy,drive/gt2-belt&view=drive/leadscrew`
+- `#/browse?pick=<id>&view=<id>`; the old form `#/browse/<node-id>` is read as Browse with `view=<node-id>`.
 
 Unknown ids in the hash are ignored with a notice.
 

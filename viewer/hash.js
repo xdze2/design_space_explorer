@@ -1,6 +1,7 @@
 export const DEFAULT_HASH = '#/selection';
 
-// '#/browse/<id>?pick=a,b' or '#/selection?pick=a,b' -> { page, params, pick, unknown }.
+// '#/<page>?pick=a,b&view=<id>' -> { page, pick, view, unknown }.
+// Legacy '#/browse/<id>' is read as Browse with view=<id> (root means no view).
 // `known` is a Set of node ids; ids not in it are dropped and reported in `unknown`.
 export function parseHash(hash, known) {
   const m = hash.replace(/^#/, '').match(/^\/([a-z]+)(?:\/([^?]*))?(?:\?(.*))?$/);
@@ -10,16 +11,20 @@ export function parseHash(hash, known) {
     unknown.push(id);
     return false;
   };
-  const picked = new URLSearchParams(m?.[3] ?? '').get('pick') ?? '';
-  const pick = picked.split(',').filter(Boolean).filter(keep);
-  if (m?.[1] === 'browse') {
-    const id = decodeURIComponent(m[2] ?? '') || 'root';
-    return { page: 'browse', params: { id: keep(id) ? id : 'root' }, pick, unknown };
+  const query = new URLSearchParams(m?.[3] ?? '');
+  const pick = (query.get('pick') ?? '').split(',').filter(Boolean).filter(keep);
+  const page = m?.[1] === 'browse' ? 'browse' : 'selection';
+  let view = query.get('view') || '';
+  if (!view && page === 'browse') {
+    const legacy = decodeURIComponent(m[2] ?? '');
+    if (legacy && legacy !== 'root') view = legacy;
   }
-  return { page: 'selection', params: {}, pick, unknown };
+  return { page, pick, view: view && keep(view) ? view : null, unknown };
 }
 
-export function buildHash(page, params = {}, pick = []) {
-  const path = page === 'browse' ? `#/browse/${params.id ?? 'root'}` : '#/selection';
-  return pick.length ? `${path}?pick=${pick.join(',')}` : path;
+export function buildHash(page, { pick = [], view = null } = {}) {
+  const query = [];
+  if (pick.length) query.push(`pick=${pick.join(',')}`);
+  if (view) query.push(`view=${view}`);
+  return `#/${page === 'browse' ? 'browse' : 'selection'}${query.length ? `?${query.join('&')}` : ''}`;
 }

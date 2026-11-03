@@ -60,10 +60,10 @@ async function fillBrief(slot, graph, pick) {
   if ((!brief || brief.stale) && template) slot.append(promptBox(buildPrompt(template, graph, pick)));
 }
 
-export function render(graph, _params, pick) {
+export function render(graph, { pick, view }) {
   const { missing, conflicts } = analyze(graph, pick);
   const title = (id) => graph.byId.get(id)?.title ?? id;
-  const browse = (id) => el('a', { href: buildHash('browse', { id }, pick) }, title(id));
+  const browse = (id) => el('a', { href: buildHash('selection', { pick, view: id }) }, title(id));
   const page = el('div', { class: 'selection' }, el('h2', {}, 'Current selection'));
 
   if (!pick.length) {
@@ -85,7 +85,7 @@ export function render(graph, _params, pick) {
       el('h3', {}, 'Required, not selected'),
       el('ul', { class: 'missing' }, ...[...missing].map(([id, by]) =>
         el('li', {},
-          el('a', { href: buildHash('selection', {}, toggle(graph, pick, id)) }, `Select ${title(id)}`),
+          el('a', { href: buildHash('selection', { pick: toggle(graph, pick, id), view }) }, `Select ${title(id)}`),
           ` (required by ${by.map(title).join(', ')})`))),
     );
   }

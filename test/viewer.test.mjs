@@ -20,24 +20,32 @@ test('markdown: HTML is escaped', () => {
   assert.ok(html.includes('&lt;script&gt;'));
 });
 
-test('hash: browse and selection round trip, pick kept on both pages', () => {
-  assert.deepEqual(parseHash('#/browse/gantry/corexy', known), {
-    page: 'browse', params: { id: 'gantry/corexy' }, pick: [], unknown: [],
+test('hash: page, pick and view round trip', () => {
+  const s = parseHash('#/selection?pick=gantry/corexy,drive/gt2-belt&view=gantry/h-bot', known);
+  assert.deepEqual(s, {
+    page: 'selection', pick: ['gantry/corexy', 'drive/gt2-belt'], view: 'gantry/h-bot', unknown: [],
   });
-  const s = parseHash('#/selection?pick=gantry/corexy,drive/gt2-belt', known);
-  assert.equal(s.page, 'selection');
-  assert.deepEqual(s.pick, ['gantry/corexy', 'drive/gt2-belt']);
-  const b = parseHash('#/browse/drive/leadscrew?pick=gantry/corexy', known);
-  assert.deepEqual([b.params.id, b.pick], ['drive/leadscrew', ['gantry/corexy']]);
-  assert.equal(buildHash('selection', {}, ['a/b', 'c/d']), '#/selection?pick=a/b,c/d');
+  assert.deepEqual(parseHash('#/browse', known), { page: 'browse', pick: [], view: null, unknown: [] });
+  assert.equal(buildHash('selection', { pick: ['a/b', 'c/d'] }), '#/selection?pick=a/b,c/d');
   assert.equal(buildHash('selection'), '#/selection');
-  assert.equal(buildHash('browse', { id: 'gantry/corexy' }, ['x/y']), '#/browse/gantry/corexy?pick=x/y');
+  assert.equal(buildHash('browse', { pick: ['x/y'], view: 'gantry/corexy' }), '#/browse?pick=x/y&view=gantry/corexy');
+});
+
+test('hash: legacy browse links read as view', () => {
+  assert.deepEqual(parseHash('#/browse/gantry/corexy', known), {
+    page: 'browse', pick: [], view: 'gantry/corexy', unknown: [],
+  });
+  const b = parseHash('#/browse/drive/leadscrew?pick=gantry/corexy', known);
+  assert.deepEqual([b.view, b.pick], ['drive/leadscrew', ['gantry/corexy']]);
+  assert.equal(parseHash('#/browse/root', known).view, null);
 });
 
 test('hash: unknown ids are dropped and reported', () => {
   const b = parseHash('#/browse/gantry/doesnotexist', known);
   assert.deepEqual(b.unknown, ['gantry/doesnotexist']);
-  assert.equal(b.params.id, 'root');
+  assert.equal(b.view, null);
+  const v = parseHash('#/selection?view=nope', known);
+  assert.deepEqual([v.view, v.unknown], [null, ['nope']]);
   const s = parseHash('#/selection?pick=gantry/corexy,nope', known);
   assert.deepEqual(s.pick, ['gantry/corexy']);
   assert.deepEqual(s.unknown, ['nope']);

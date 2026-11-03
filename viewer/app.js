@@ -2,6 +2,7 @@ import { parseHash, buildHash, DEFAULT_HASH } from './hash.js';
 import { render as renderBrowse } from './views/browse.js';
 import { render as renderSelection } from './views/selection.js';
 import { render as renderPanel } from './views/panel.js';
+import { render as renderModal, dispose as disposeModal } from './views/modal.js';
 import { el } from './dom.js';
 
 const pages = { browse: renderBrowse, selection: renderSelection };
@@ -30,15 +31,23 @@ function route() {
     location.hash = DEFAULT_HASH;
     return;
   }
-  const { page, params, pick, unknown } = parseHash(location.hash, new Set(graph.byId.keys()));
+  const route = parseHash(location.hash, new Set(graph.byId.keys()));
+  const { page, pick, view, unknown } = route;
   const notice = unknown.length
     ? el('p', { class: 'notice' }, `Ignored unknown node id: ${unknown.join(', ')}`)
     : '';
   // Header links keep the selection.
-  document.getElementById('nav-selection').href = buildHash('selection', {}, pick);
-  document.getElementById('nav-browse').href = buildHash('browse', { id: 'root' }, pick);
-  const main = el('div', { class: 'main' }, notice, pages[page](graph, params, pick));
-  show(el('div', { class: 'layout' }, renderPanel(graph, { page, params }, pick), main));
+  document.getElementById('nav-selection').href = buildHash('selection', { pick });
+  document.getElementById('nav-browse').href = buildHash('browse', { pick });
+  const main = el('div', { class: 'main' }, notice, pages[page](graph, route));
+  const layout = page === 'selection'
+    ? el('div', { class: 'layout' }, renderPanel(graph, route), main)
+    : el('div', { class: 'layout single' }, main);
+  const y = scrollY;
+  show(layout);
+  if (view) app.append(renderModal(graph, route));
+  else disposeModal();
+  scrollTo(0, y);
 }
 
 try {
