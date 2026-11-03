@@ -1,0 +1,18 @@
+schema: spec-driven
+
+context: |
+  Design space explorer: an LLM-maintained wiki of design decisions (first topic: a DIY pen plotter),
+  with a McMaster-style building assistant on top. Solo side project / demo: keep everything light and fast.
+  - Write all artifacts and content in English.
+  - Knowledge base = one Markdown file per node (YAML frontmatter + prose body), compiled to a graph.json.
+  - Output is a static web app (JSON, JavaScript, Markdown). No runtime LLM calls in the static viewer.
+  - Every node has a `sources` field. Free text is fine: a URL, "user", or "LLM:<model>".
+  - The raw data folder (web pages, transcripts, notes) is git-ignored.
+  - Constraints are loose by design: structured edges (requires/excludes/compatible_with) plus prose.
+    No solver in v1.
+
+rules:
+  proposal:
+    - Keep proposals short; state what is out of scope.
+  tasks:
+    - Prefer small tasks; this is a solo demo project.
