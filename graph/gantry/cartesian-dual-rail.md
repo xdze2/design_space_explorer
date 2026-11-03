@@ -1,8 +1,7 @@
 ---
+id: "d378aed0"
 title: Cartesian, two Y rails
 type: option
-parent: gantry
-compatible_with: [linear-guide/vslot-wheels, drive/gt2-belt]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

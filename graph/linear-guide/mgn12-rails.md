@@ -1,8 +1,7 @@
 ---
+id: "ec58e5bb"
 title: MGN12 linear rails
 type: option
-parent: linear-guide
-compatible_with: [gantry/single-rail-cantilever]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

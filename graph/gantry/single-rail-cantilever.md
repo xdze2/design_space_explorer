@@ -1,8 +1,7 @@
 ---
+id: "9184df42"
 title: Single-rail cantilever (AxiDraw style)
 type: option
-parent: gantry
-compatible_with: [linear-guide/mgn12-rails, drive/gt2-belt]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

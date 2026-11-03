@@ -1,8 +1,7 @@
 ---
+id: "18cc3c4a"
 title: Smooth rods and linear bearings
 type: option
-parent: linear-guide
-excludes: [gantry/single-rail-cantilever]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

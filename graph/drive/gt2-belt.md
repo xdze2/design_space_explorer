@@ -1,8 +1,7 @@
 ---
+id: "e67a2f12"
 title: GT2 belt, 6 mm
 type: option
-parent: drive
-compatible_with: [controller/grbl-arduino]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

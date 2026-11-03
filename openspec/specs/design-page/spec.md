@@ -6,7 +6,7 @@ Gives the viewer three views with separate roles (Graph, Design, Node) and a com
 ## Requirements
 
 ### Requirement: Views and routes
-The viewer SHALL have a Graph page and a Design page, and the Design page SHALL be the default. The hash SHALL encode the page, the selection (`pick`) and the open node (`view`) independently. `#/selection` SHALL be read as Design and `#/browse` and `#/browse/<id>` as Graph (with `view=<id>` for the latter, root meaning none). Unknown node ids SHALL be ignored with the existing visible notice.
+The viewer SHALL have a Graph page and a Design page, and the Design page SHALL be the default. The hash SHALL encode the page, the selection (`pick`), the open node (`view`) and, on the Graph page, the outline depths (`up`, `down`) independently. `#/selection` SHALL be read as Design and `#/browse` and `#/browse/<id>` as Graph (with `view=<id>` for the latter, root meaning none). Unknown node ids SHALL be ignored with the existing visible notice.
 
 #### Scenario: Default
 - **WHEN** the viewer is opened without a hash
@@ -43,7 +43,7 @@ The viewer SHALL show a selection tray on every page instead of a side panel. Th
 - **THEN** the selection is empty and the Graph page is still shown
 
 ### Requirement: Choosing options
-An option SHALL be chosen or unchosen from the option's node view and from its decision's node view. A decision's node view SHALL list its options with a choose action each, at most one option per decision, and SHALL show options excluded by the current selection as disabled, naming the selected option responsible. The Graph tree SHALL mark chosen options. Decision and other non-option nodes SHALL show no choose action for themselves.
+An option SHALL be chosen or unchosen from the option's node view and from its decision's node view. A decision's node view SHALL list its options with a choose action each, at most one option per decision, and SHALL show options excluded by the current selection as disabled, naming the selected option responsible. The Graph outline SHALL mark chosen options. Decision and other non-option nodes SHALL show no choose action for themselves.
 
 #### Scenario: Choose from the decision
 - **WHEN** the user opens `gantry` and chooses `CoreXY`
@@ -60,7 +60,7 @@ An option SHALL be chosen or unchosen from the option's node view and from its d
 - **THEN** `Leadscrew` is shown disabled with `CoreXY` named as the cause
 
 ### Requirement: Node view placement
-Opening a node on the Design page SHALL show it in a side drawer next to the page, which stays visible and unchanged. Opening a node on the Graph page SHALL show it in the main pane beside the tree, with no overlay. The node view SHALL show title, type, confidence, body as Markdown, sources, links for `requires`, `excludes` and `compatible_with`, and for an option the choose action. Following an edge link SHALL show that node in the same place. No modal SHALL be used.
+Opening a node on the Design page SHALL show it in a side drawer next to the page, which stays visible and unchanged. Opening a node on the Graph page SHALL show it in the main pane beside the outline, with no overlay. The node view SHALL show title, type, confidence, body as Markdown, sources, links for `requires`, `excludes` and `compatible_with`, and for an option the choose action. Following an edge link SHALL show that node in the same place. No modal SHALL be used.
 
 #### Scenario: Drawer on Design
 - **WHEN** the user activates a chip or a diagram box on the Design page
@@ -71,8 +71,8 @@ Opening a node on the Design page SHALL show it in a side drawer next to the pag
 - **THEN** the drawer is closed and the selection is unchanged
 
 #### Scenario: Main pane on Graph
-- **WHEN** the user activates `Leadscrew` in the Graph tree
-- **THEN** the main pane shows `drive/leadscrew` beside the tree and nothing overlays the page
+- **WHEN** the user activates `Leadscrew` in the Graph outline
+- **THEN** the main pane shows `drive/leadscrew` beside the outline and nothing overlays the page
 
 #### Scenario: Follow an edge
 - **GIVEN** `gantry/corexy` is shown
@@ -125,7 +125,7 @@ If Mermaid cannot be loaded or rendering fails, the Design page SHALL show the d
 - **THEN** the source is shown as text and the brief, lists and chosen options are still shown
 
 ### Requirement: Narrow screens
-On a narrow screen the tray SHALL wrap, the Graph tree and its main pane SHALL stack, and the drawer SHALL cover the width of the screen with a close button. Nothing except the diagram and code blocks SHALL scroll horizontally.
+On a narrow screen the tray SHALL wrap, the Graph outline and its main pane SHALL stack, and the drawer SHALL cover the width of the screen with a close button. Nothing except the diagram and code blocks SHALL scroll horizontally, and a long outline line SHALL wrap instead of widening the page.
 
 #### Scenario: Phone width
 - **WHEN** the viewport is about 400px wide

@@ -1,7 +1,7 @@
 ---
+id: "f196a1a8"
 title: Linear guide
 type: decision
-parent: root
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 slot: Motion

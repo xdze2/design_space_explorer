@@ -5,8 +5,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { saveBrief, toGraph } from '../scripts/brief.mjs';
 import { selectionKey } from '../viewer/brief.js';
+import { idByTitle } from './helpers.mjs';
 
-const graph = toGraph(JSON.parse(readFileSync(new URL('../graph.json', import.meta.url))));
+const data = JSON.parse(readFileSync(new URL('../graph.json', import.meta.url)));
+const graph = toGraph(data);
+const id = idByTitle(data.nodes);
 
 function tempRoot() {
   const root = mkdtempSync(join(tmpdir(), 'brief-'));
@@ -17,12 +20,12 @@ function tempRoot() {
 
 test('saveBrief: writes file and index, replaces on second save', async () => {
   const root = tempRoot();
-  const pick = ['gantry/corexy', 'drive/gt2-belt'];
+  const pick = [id('CoreXY'), id('GT2 belt, 6 mm')];
   const key = await saveBrief({ root, graph, pick, text: 'First', model: 'm1' });
   const file = join(root, 'briefs', `${key}.md`);
   assert.equal(key, selectionKey(pick));
   const text = read(file, 'utf8');
-  assert.match(text, /^---\npick: drive\/gt2-belt,gantry\/corexy\ncontent_hash: \w+\nmodel: m1\nprompt_version: 1\n/);
+  assert.match(text, new RegExp(`^---\\npick: ${[...pick].sort().join(',')}\\ncontent_hash: \\w+\\nmodel: m1\\nprompt_version: 1\\n`));
   assert.ok(text.endsWith('\n---\nFirst\n') && text.includes('created: '));
   await saveBrief({ root, graph, pick: [...pick].reverse(), text: 'Second', model: 'm2' });
   assert.match(read(file, 'utf8'), /model: m2[\s\S]*Second/);
@@ -32,6 +35,6 @@ test('saveBrief: writes file and index, replaces on second save', async () => {
 
 test('saveBrief: unknown id throws and writes nothing', async () => {
   const root = tempRoot();
-  await assert.rejects(saveBrief({ root, graph, pick: ['gantry/corexy', 'nope/x'], text: 't' }), /nope\/x/);
+  await assert.rejects(saveBrief({ root, graph, pick: [id('CoreXY'), 'nope/x'], text: 't' }), /nope\/x/);
   assert.ok(!existsSync(join(root, 'briefs')));
 });

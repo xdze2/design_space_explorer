@@ -1,8 +1,7 @@
 ---
+id: "18f0f7e8"
 title: Leadscrew
 type: option
-parent: drive
-excludes: [gantry/corexy, gantry/h-bot]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

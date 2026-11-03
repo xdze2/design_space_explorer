@@ -1,7 +1,7 @@
 ---
+id: "0a54c8d2"
 title: Pen lift
 type: decision
-parent: root
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 slot: Tool

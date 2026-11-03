@@ -1,4 +1,5 @@
 ---
+id: "4fa10308"
 title: DIY A3 pen plotter
 type: root
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]

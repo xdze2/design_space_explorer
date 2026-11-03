@@ -1,7 +1,7 @@
 ---
+id: "cf8cb098"
 title: Z stepper or leadscrew
 type: option
-parent: pen-lift
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

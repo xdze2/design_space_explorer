@@ -1,8 +1,7 @@
 ---
+id: "4c50ec2b"
 title: Hobby servo (SG90/MG90S)
 type: option
-parent: pen-lift
-compatible_with: [controller/grbl-arduino, controller/fluidnc-esp32]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

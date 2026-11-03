@@ -1,8 +1,7 @@
 ---
+id: "39309dbe"
 title: V-slot wheels on 2020 extrusion
 type: option
-parent: linear-guide
-compatible_with: [gantry/cartesian-dual-rail]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

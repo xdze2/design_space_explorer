@@ -1,8 +1,7 @@
 ---
+id: "467f2cbc"
 title: FluidNC on ESP32
 type: option
-parent: controller
-compatible_with: [pen-lift/servo, gantry/corexy]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---

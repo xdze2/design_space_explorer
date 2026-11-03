@@ -1,7 +1,7 @@
 ---
+id: "037e51d4"
 title: Controller
 type: decision
-parent: root
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 slot: Electronics

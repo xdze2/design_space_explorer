@@ -1,0 +1,37 @@
+{"from":"39309dbe","to":"d378aed0","type":"compatible_with","src":"migration","hint":"V-slot wheels on 2020 extrusion compatible_with Cartesian, two Y rails"}
+{"from":"467f2cbc","to":"4c50ec2b","type":"compatible_with","src":"migration","hint":"FluidNC on ESP32 compatible_with Hobby servo (SG90/MG90S)"}
+{"from":"467f2cbc","to":"861c9946","type":"compatible_with","src":"migration","hint":"FluidNC on ESP32 compatible_with CoreXY"}
+{"from":"4c50ec2b","to":"467f2cbc","type":"compatible_with","src":"migration","hint":"Hobby servo (SG90/MG90S) compatible_with FluidNC on ESP32"}
+{"from":"4c50ec2b","to":"9c57ba17","type":"compatible_with","src":"migration","hint":"Hobby servo (SG90/MG90S) compatible_with GRBL on Arduino Uno + CNC Shield"}
+{"from":"9184df42","to":"e67a2f12","type":"compatible_with","src":"migration","hint":"Single-rail cantilever (AxiDraw style) compatible_with GT2 belt, 6 mm"}
+{"from":"9184df42","to":"ec58e5bb","type":"compatible_with","src":"migration","hint":"Single-rail cantilever (AxiDraw style) compatible_with MGN12 linear rails"}
+{"from":"9c57ba17","to":"861c9946","type":"compatible_with","src":"migration","hint":"GRBL on Arduino Uno + CNC Shield compatible_with CoreXY"}
+{"from":"9c57ba17","to":"d378aed0","type":"compatible_with","src":"migration","hint":"GRBL on Arduino Uno + CNC Shield compatible_with Cartesian, two Y rails"}
+{"from":"d378aed0","to":"39309dbe","type":"compatible_with","src":"migration","hint":"Cartesian, two Y rails compatible_with V-slot wheels on 2020 extrusion"}
+{"from":"d378aed0","to":"e67a2f12","type":"compatible_with","src":"migration","hint":"Cartesian, two Y rails compatible_with GT2 belt, 6 mm"}
+{"from":"e67a2f12","to":"9c57ba17","type":"compatible_with","src":"migration","hint":"GT2 belt, 6 mm compatible_with GRBL on Arduino Uno + CNC Shield"}
+{"from":"ec58e5bb","to":"9184df42","type":"compatible_with","src":"migration","hint":"MGN12 linear rails compatible_with Single-rail cantilever (AxiDraw style)"}
+{"from":"18cc3c4a","to":"9184df42","type":"excludes","src":"migration","hint":"Smooth rods and linear bearings excludes Single-rail cantilever (AxiDraw style)"}
+{"from":"18f0f7e8","to":"2456bdf6","type":"excludes","src":"migration","hint":"Leadscrew excludes H-bot"}
+{"from":"18f0f7e8","to":"861c9946","type":"excludes","src":"migration","hint":"Leadscrew excludes CoreXY"}
+{"from":"037e51d4","to":"4fa10308","type":"parent","src":"migration","hint":"Controller > DIY A3 pen plotter"}
+{"from":"0a54c8d2","to":"4fa10308","type":"parent","src":"migration","hint":"Pen lift > DIY A3 pen plotter"}
+{"from":"18cc3c4a","to":"f196a1a8","type":"parent","src":"migration","hint":"Smooth rods and linear bearings > Linear guide"}
+{"from":"18f0f7e8","to":"eb6774ed","type":"parent","src":"migration","hint":"Leadscrew > Drive type"}
+{"from":"2456bdf6","to":"b3a8fe22","type":"parent","src":"migration","hint":"H-bot > Gantry geometry"}
+{"from":"39309dbe","to":"f196a1a8","type":"parent","src":"migration","hint":"V-slot wheels on 2020 extrusion > Linear guide"}
+{"from":"467f2cbc","to":"037e51d4","type":"parent","src":"migration","hint":"FluidNC on ESP32 > Controller"}
+{"from":"4c50ec2b","to":"0a54c8d2","type":"parent","src":"migration","hint":"Hobby servo (SG90/MG90S) > Pen lift"}
+{"from":"5b1a91d1","to":"0a54c8d2","type":"parent","src":"migration","hint":"Solenoid > Pen lift"}
+{"from":"861c9946","to":"b3a8fe22","type":"parent","src":"migration","hint":"CoreXY > Gantry geometry"}
+{"from":"9184df42","to":"b3a8fe22","type":"parent","src":"migration","hint":"Single-rail cantilever (AxiDraw style) > Gantry geometry"}
+{"from":"9c57ba17","to":"037e51d4","type":"parent","src":"migration","hint":"GRBL on Arduino Uno + CNC Shield > Controller"}
+{"from":"b3a8fe22","to":"4fa10308","type":"parent","src":"migration","hint":"Gantry geometry > DIY A3 pen plotter"}
+{"from":"cf8cb098","to":"0a54c8d2","type":"parent","src":"migration","hint":"Z stepper or leadscrew > Pen lift"}
+{"from":"d378aed0","to":"b3a8fe22","type":"parent","src":"migration","hint":"Cartesian, two Y rails > Gantry geometry"}
+{"from":"e67a2f12","to":"eb6774ed","type":"parent","src":"migration","hint":"GT2 belt, 6 mm > Drive type"}
+{"from":"eb6774ed","to":"4fa10308","type":"parent","src":"migration","hint":"Drive type > DIY A3 pen plotter"}
+{"from":"ec58e5bb","to":"f196a1a8","type":"parent","src":"migration","hint":"MGN12 linear rails > Linear guide"}
+{"from":"f196a1a8","to":"4fa10308","type":"parent","src":"migration","hint":"Linear guide > DIY A3 pen plotter"}
+{"from":"2456bdf6","to":"e67a2f12","type":"requires","src":"migration","hint":"H-bot requires GT2 belt, 6 mm"}
+{"from":"861c9946","to":"e67a2f12","type":"requires","src":"migration","hint":"CoreXY requires GT2 belt, 6 mm"}

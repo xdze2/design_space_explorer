@@ -1,8 +1,7 @@
 ---
+id: "9c57ba17"
 title: GRBL on Arduino Uno + CNC Shield
 type: option
-parent: controller
-compatible_with: [gantry/cartesian-dual-rail, gantry/corexy]
 sources: ["LLM:sonnet-5.5", "raw/DIY A3 pen plotter - Claude.md"]
 confidence: low
 ---
