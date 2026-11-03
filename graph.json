@@ -1,0 +1,339 @@
+{
+  "nodes": [
+    {
+      "id": "controller/fluidnc-esp32",
+      "title": "FluidNC on ESP32",
+      "type": "option",
+      "parent": "controller",
+      "compatible_with": [
+        "pen-lift/servo",
+        "gantry/corexy"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Wi-Fi upload, configuration through a YAML file (including CoreXY kinematics) and native servo support. Takes standard G-code.\n\n**Tradeoffs.** More configuration than GRBL on an Uno, and the ESP32 board and shield cost more.",
+      "children": []
+    },
+    {
+      "id": "controller/grbl-arduino",
+      "title": "GRBL on Arduino Uno + CNC Shield",
+      "type": "option",
+      "parent": "controller",
+      "compatible_with": [
+        "gantry/cartesian-dual-rail",
+        "gantry/corexy"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** About $14 for the board and shield, widely documented, takes standard G-code, and Universal G-code Sender works with it. A4988 drivers cost $8 (TMC2209 for quieter operation is +$10). CoreXY is available as a compile option.\n\n**Tradeoffs.** No Wi-Fi, and the pen servo needs a servo-supporting GRBL fork.",
+      "children": []
+    },
+    {
+      "id": "controller",
+      "title": "Controller",
+      "type": "decision",
+      "parent": "root",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why it matters.** The controller runs the firmware that turns G-code into steps. It decides the workflow (how drawings are sent), the available acceleration tuning and kinematics support.\n\n**Tradeoffs.** Mainstream hobby boards are cheap and well documented. Boards with Wi-Fi add convenience but need more configuration.",
+      "children": [
+        "controller/fluidnc-esp32",
+        "controller/grbl-arduino"
+      ]
+    },
+    {
+      "id": "drive/gt2-belt",
+      "title": "GT2 belt, 6 mm",
+      "type": "option",
+      "parent": "drive",
+      "compatible_with": [
+        "controller/grbl-arduino"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Cheap (about $15 for belt, pulleys and idlers), light and fast. 20T pulleys with 1/16 microstepping give 80 steps/mm.\n\n**Tradeoffs.** Belt stretch and tooth engagement limit accuracy to 0.1 to 0.3 mm. Use reinforced-core belt, wrap enough teeth round each pulley and keep belts tight and straight.",
+      "children": []
+    },
+    {
+      "id": "drive/leadscrew",
+      "title": "Leadscrew",
+      "type": "option",
+      "parent": "drive",
+      "excludes": [
+        "gantry/corexy",
+        "gantry/h-bot"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Precise, no stretch, self-holding and compact.\n\n**Tradeoffs.** Slow, with more friction and wobble on long travel, and heavy on a moving gantry. Poor for A3 speeds.\n\n**Constraints.** It excludes CoreXY (`gantry/corexy`) and H-bot (`gantry/h-bot`): both are defined by their belt paths and cannot be built with screws.",
+      "children": []
+    },
+    {
+      "id": "drive",
+      "title": "Drive type",
+      "type": "decision",
+      "parent": "root",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why it matters.** The drive converts motor rotation into travel and sets resolution, speed and belt stretch or backlash. Resolution is not accuracy: 80 steps/mm is 0.0125 mm in theory, but real accuracy is around 0.1 to 0.3 mm.\n\n**Tradeoffs.** Belts are fast, cheap and light but stretch. Screws are precise and slow.",
+      "children": [
+        "drive/gt2-belt",
+        "drive/leadscrew"
+      ]
+    },
+    {
+      "id": "gantry/cartesian-dual-rail",
+      "title": "Cartesian, two Y rails",
+      "type": "option",
+      "parent": "gantry",
+      "compatible_with": [
+        "linear-guide/vslot-wheels",
+        "drive/gt2-belt"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** The easiest layout to build and tune: one motor on the moving X carriage, one fixed motor on Y, with a rail on each side of the bed. This is the base of the reference BOM (2020 V-slot, about $150).\n\n**Tradeoffs.** Moving mass is higher because a motor rides on the gantry. The two rails must be parallel and equally preloaded over 500 mm, and a Y axis driven from one side wants to rack. Fix it with a stiff rod linking both belts, or a second synchronized motor.",
+      "children": []
+    },
+    {
+      "id": "gantry/corexy",
+      "title": "CoreXY",
+      "type": "option",
+      "parent": "gantry",
+      "requires": [
+        "drive/gt2-belt"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Both motors are fixed at the rear corners, so the moving mass is minimal and acceleration can be very high. Both ends of the beam are driven, so racking is low. Kinematics: X = (A+B)/2, Y = (A-B)/2. GRBL supports it as a compile option, FluidNC through its kinematics config.\n\n**Tradeoffs.** It needs 10 to 14 idlers and 4 to 6 m of belt, and equal tension and equal path length on both belts, or drawings skew and circles turn into ovals. Both belts should sit level. A square, rigid frame is not optional. It adds about $15 to 25 to the BOM.\n\n**Constraints.** It requires a belt drive (`drive/gt2-belt`): the two-belt kinematics cannot be built with screws.",
+      "children": [],
+      "excludes": [
+        "drive/leadscrew"
+      ]
+    },
+    {
+      "id": "gantry/h-bot",
+      "title": "H-bot",
+      "type": "option",
+      "parent": "gantry",
+      "requires": [
+        "drive/gt2-belt"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** A single belt in an H shape with fixed motors. Fewer parts and cheaper than CoreXY.\n\n**Tradeoffs.** The belt force is applied off-axis and twists the gantry, so it is only good for small, light machines. A poor fit for A3.\n\n**Constraints.** It requires a belt drive (`drive/gt2-belt`) since the layout is the belt path.",
+      "children": [],
+      "excludes": [
+        "drive/leadscrew"
+      ]
+    },
+    {
+      "id": "gantry/single-rail-cantilever",
+      "title": "Single-rail cantilever (AxiDraw style)",
+      "type": "option",
+      "parent": "gantry",
+      "compatible_with": [
+        "linear-guide/mgn12-rails",
+        "drive/gt2-belt"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** One Y rail along one side carries a cantilevered X beam. There is no parallelism to get right, no racking, a single belt and motor, less extrusion and moving mass, and one side stays open for loading paper or odd-shaped media. Many commercial pen plotters work this way.\n\n**Tradeoffs.** The load sits off the rail, so the carriage sees a tilting moment: beam sag and twist, higher wheel loads and a lower resonance, which limits acceleration. It needs a wide carriage (4+ wheels or two bearing blocks), a stiff beam (2040 or a box section rather than 2020) and a short overhang. With 2020, a 300+ mm overhang flexes noticeably, which matters at A3.",
+      "children": [],
+      "excludes": [
+        "linear-guide/smooth-rods"
+      ]
+    },
+    {
+      "id": "gantry",
+      "title": "Gantry geometry",
+      "type": "decision",
+      "parent": "root",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why it matters.** The geometry sets the moving mass, the risk of racking (the beam skewing when driven from one side) and how open the machine is for loading paper. Acceleration, and so drawing speed, is limited by moving mass and resonance, not by motor torque.\n\n**Tradeoffs.** Simple layouts are easy to tune but carry a motor on the gantry. Lighter layouts need more belts, idlers and careful tension.",
+      "children": [
+        "gantry/cartesian-dual-rail",
+        "gantry/corexy",
+        "gantry/h-bot",
+        "gantry/single-rail-cantilever"
+      ]
+    },
+    {
+      "id": "linear-guide/mgn12-rails",
+      "title": "MGN12 linear rails",
+      "type": "option",
+      "parent": "linear-guide",
+      "compatible_with": [
+        "gantry/single-rail-cantilever"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Precise, low play and smooth, with high moment capacity from the carriage block. A good fit for a single-rail Y, where the carriage takes a tilting load.\n\n**Tradeoffs.** Costs more and needs a flat, stiff mounting surface. Together with TMC2209 drivers it moves the total from about $150 to about $250.",
+      "children": []
+    },
+    {
+      "id": "linear-guide/smooth-rods",
+      "title": "Smooth rods and linear bearings",
+      "type": "option",
+      "parent": "linear-guide",
+      "excludes": [
+        "gantry/single-rail-cantilever"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Cheap, common (3D printer heritage) and easy to find, and fine for light moving parts.\n\n**Tradeoffs.** Rods sag over long spans and have less stiffness than a rail. Bearings can bind if the rods are not parallel.\n\n**Constraints.** It excludes the single-rail cantilever (`gantry/single-rail-cantilever`): a round rod resists the tilting moment of a cantilevered beam poorly and the carriage would rock.",
+      "children": []
+    },
+    {
+      "id": "linear-guide/vslot-wheels",
+      "title": "V-slot wheels on 2020 extrusion",
+      "type": "option",
+      "parent": "linear-guide",
+      "compatible_with": [
+        "gantry/cartesian-dual-rail"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** The cheapest option (about $12 for wheels, brackets and plates, with the extrusion doubling as the rail) and easy to source. Eccentric nuts allow adjusting out wheel play.\n\n**Tradeoffs.** Play and friction depend on careful adjustment, and the stiffness is limited. A 500 mm 2020 beam is about the practical limit for A3.",
+      "children": []
+    },
+    {
+      "id": "linear-guide",
+      "title": "Linear guide",
+      "type": "decision",
+      "parent": "root",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why it matters.** The guide defines how much play and friction each axis has. Removing play while keeping smooth motion is the main skill of the build: too tight binds and loses steps, too loose gives wobbly lines.\n\n**Tradeoffs.** Cheap guides need adjustment and are less stiff. Precision rails cost more and need flatter mounting surfaces.",
+      "children": [
+        "linear-guide/mgn12-rails",
+        "linear-guide/smooth-rods",
+        "linear-guide/vslot-wheels"
+      ]
+    },
+    {
+      "id": "pen-lift/servo",
+      "title": "Hobby servo (SG90/MG90S)",
+      "type": "option",
+      "parent": "pen-lift",
+      "compatible_with": [
+        "controller/grbl-arduino",
+        "controller/fluidnc-esp32"
+      ],
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** About $4, with a repeatable up/down travel set by the servo angle. Pair it with a spring-loaded holder for compliance. GRBL needs a servo-capable fork, and FluidNC supports it natively.\n\n**Tradeoffs.** Little control over contact pressure, and some play in the horn. Only two positions, so no pressure variation.",
+      "children": []
+    },
+    {
+      "id": "pen-lift/solenoid",
+      "title": "Solenoid",
+      "type": "option",
+      "parent": "pen-lift",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Fast lift and simple on/off control.\n\n**Tradeoffs.** Needs a transistor driver and a supply, makes noise, and the stroke is short and not adjustable. Heats if held on. Weaker for pen pressure than a spring with a servo.",
+      "children": []
+    },
+    {
+      "id": "pen-lift/z-stepper",
+      "title": "Z stepper or leadscrew",
+      "type": "option",
+      "parent": "pen-lift",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why choose it.** Controllable pen height and pressure, which suits brush pens and varying line weight.\n\n**Tradeoffs.** More mass on the carriage, another motor and driver, and slower than a servo. More than a plain pen plotter needs.",
+      "children": []
+    },
+    {
+      "id": "pen-lift",
+      "title": "Pen lift",
+      "type": "decision",
+      "parent": "root",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "**Why it matters.** Pen pressure, tip compliance and a repeatable up/down travel affect line quality more than a 0.05 mm mechanical improvement.\n\n**Tradeoffs.** Simple lifters are cheap but give little control over pressure. A spring-loaded holder with a repeatable stop helps with any of them.",
+      "children": [
+        "pen-lift/servo",
+        "pen-lift/solenoid",
+        "pen-lift/z-stepper"
+      ]
+    },
+    {
+      "id": "root",
+      "title": "DIY A3 pen plotter",
+      "type": "root",
+      "sources": [
+        "LLM:sonnet-5.5",
+        "raw/DIY A3 pen plotter - Claude.md"
+      ],
+      "confidence": "low",
+      "body": "A cheap, home-built pen plotter with an A3 drawing area (420 x 297 mm), around $150 of parts. Five decisions shape the build: the gantry geometry, the linear guide, the drive type, the pen lift and the controller. Accuracy in practice comes more from rigidity, play removal and the pen interface than from any single component choice.",
+      "children": [
+        "controller",
+        "drive",
+        "gantry",
+        "linear-guide",
+        "pen-lift"
+      ]
+    }
+  ]
+}

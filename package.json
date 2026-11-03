@@ -1,0 +1,12 @@
+{
+  "name": "design-space-explorer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-graph.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0"
+  }
+}
