@@ -59,9 +59,28 @@ npm run build   # refresh graph.json
 npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
 ```
 
-The view and its state live in the URL hash, so reload and sharing restore them:
+The page has a selection panel on the left (always visible) and a main area:
 
-- `#/browse/<node-id>`: tree and detail pane, e.g. `#/browse/gantry/corexy`
-- `#/select?pick=<id>,<id>`: Select view with the given options chosen, e.g. `#/select?pick=gantry/corexy,drive/gt2-belt`
+- **Selection**: the current selection with each chosen option's text, plus conflicts, required-but-unselected options and undecided decisions.
+- **Browse**: the raw node-by-node view (tree and detail pane), with a button to select or remove an option.
+
+The page and the selection live in the URL hash, independently, so reload and sharing restore them:
+
+- `#/selection?pick=<id>,<id>`, e.g. `#/selection?pick=gantry/corexy,drive/gt2-belt`
+- `#/browse/<node-id>?pick=<id>,<id>`, e.g. `#/browse/gantry/corexy`
 
 Unknown ids in the hash are ignored with a notice.
+
+## Briefs
+
+The viewer makes no LLM calls. A written brief for a selection comes from an AI outside the page:
+
+1. Open the Selection page for a combination, expand "Prompt for an AI brief" and press "Copy prompt".
+2. Paste it into any AI and save its answer as a Markdown file, e.g. `brief.md`.
+3. Store it: `npm run brief -- save gantry/corexy,drive/gt2-belt brief.md --model <model name>`.
+
+Reload the page: the brief is shown above the summary with the model name.
+
+Cache layout: `briefs/<key>.md` (frontmatter `pick`, `content_hash`, `model`, `prompt_version`, `created`, then the Markdown) and `briefs/index.json` mapping each selection key to its file. The key does not depend on the order of the ids. Saving again for the same selection replaces the brief. The prompt template is `prompts/brief.md`.
+
+A brief is marked **stale** when the title, body, sources, `requires` or `excludes` of a selected node changed after it was saved. The prompt box is then shown again so a new brief can be made. Changes to unrelated nodes do not matter.

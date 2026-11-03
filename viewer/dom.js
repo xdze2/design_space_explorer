@@ -4,6 +4,6 @@ export const el = (tag, attrs = {}, ...kids) => {
     if (k === 'class') e.className = v;
     else e.setAttribute(k, v);
   }
-  e.append(...kids);
+  e.append(...kids.filter((k) => k != null && k !== false));
   return e;
 };

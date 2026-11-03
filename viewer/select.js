@@ -23,3 +23,9 @@ export function analyze(graph, selection) {
   }
   return { excluded, missing, conflicts };
 }
+
+// Decisions with no selected option among their children.
+export function undecided(graph, selection) {
+  const chosen = new Set(selection);
+  return graph.nodes.filter((n) => n.type === 'decision' && !(n.children ?? []).some((c) => chosen.has(c)));
+}

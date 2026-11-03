@@ -1,28 +1,25 @@
-export const DEFAULT_HASH = '#/browse/root';
+export const DEFAULT_HASH = '#/selection';
 
-// '#/browse/<id>' or '#/select?pick=a,b' -> { view, params, unknown }.
+// '#/browse/<id>?pick=a,b' or '#/selection?pick=a,b' -> { page, params, pick, unknown }.
 // `known` is a Set of node ids; ids not in it are dropped and reported in `unknown`.
 export function parseHash(hash, known) {
   const m = hash.replace(/^#/, '').match(/^\/([a-z]+)(?:\/([^?]*))?(?:\?(.*))?$/);
-  const view = m?.[1] === 'select' ? 'select' : 'browse';
   const unknown = [];
   const keep = (id) => {
     if (known.has(id)) return true;
     unknown.push(id);
     return false;
   };
-  if (view === 'select') {
-    const pick = new URLSearchParams(m?.[3] ?? '').get('pick') ?? '';
-    return { view, params: { pick: pick.split(',').filter(Boolean).filter(keep) }, unknown };
+  const picked = new URLSearchParams(m?.[3] ?? '').get('pick') ?? '';
+  const pick = picked.split(',').filter(Boolean).filter(keep);
+  if (m?.[1] === 'browse') {
+    const id = decodeURIComponent(m[2] ?? '') || 'root';
+    return { page: 'browse', params: { id: keep(id) ? id : 'root' }, pick, unknown };
   }
-  const id = decodeURIComponent(m?.[2] ?? '') || 'root';
-  return { view, params: { id: keep(id) ? id : 'root' }, unknown };
+  return { page: 'selection', params: {}, pick, unknown };
 }
 
-export function buildHash(view, params = {}) {
-  if (view === 'select') {
-    const pick = (params.pick ?? []).join(',');
-    return pick ? `#/select?pick=${pick}` : '#/select';
-  }
-  return `#/browse/${params.id ?? 'root'}`;
+export function buildHash(page, params = {}, pick = []) {
+  const path = page === 'browse' ? `#/browse/${params.id ?? 'root'}` : '#/selection';
+  return pick.length ? `${path}?pick=${pick.join(',')}` : path;
 }

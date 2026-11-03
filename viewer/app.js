@@ -1,9 +1,10 @@
-import { parseHash, DEFAULT_HASH } from './hash.js';
+import { parseHash, buildHash, DEFAULT_HASH } from './hash.js';
 import { render as renderBrowse } from './views/browse.js';
-import { render as renderSelect } from './views/select.js';
+import { render as renderSelection } from './views/selection.js';
+import { render as renderPanel } from './views/panel.js';
 import { el } from './dom.js';
 
-const views = { browse: renderBrowse, select: renderSelect };
+const pages = { browse: renderBrowse, selection: renderSelection };
 const app = document.getElementById('app');
 let graph;
 
@@ -29,11 +30,15 @@ function route() {
     location.hash = DEFAULT_HASH;
     return;
   }
-  const { view, params, unknown } = parseHash(location.hash, new Set(graph.byId.keys()));
+  const { page, params, pick, unknown } = parseHash(location.hash, new Set(graph.byId.keys()));
   const notice = unknown.length
     ? el('p', { class: 'notice' }, `Ignored unknown node id: ${unknown.join(', ')}`)
     : '';
-  show(notice, views[view](graph, params));
+  // Header links keep the selection.
+  document.getElementById('nav-selection').href = buildHash('selection', {}, pick);
+  document.getElementById('nav-browse').href = buildHash('browse', { id: 'root' }, pick);
+  const main = el('div', { class: 'main' }, notice, pages[page](graph, params, pick));
+  show(el('div', { class: 'layout' }, renderPanel(graph, { page, params }, pick), main));
 }
 
 try {
