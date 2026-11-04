@@ -32,7 +32,7 @@ The main view SHALL list the decisions that have no selected option, the nodes r
 - **THEN** the conflict between the two is shown
 
 ### Requirement: Page and selection in the URL
-The current selection SHALL be encoded in the URL hash independently of the open node, so that following a link or using the top bar keeps the others. Unknown node ids in the hash SHALL be ignored with a visible notice.
+The current selection SHALL be encoded in the URL hash independently of the open node, so that following a link keeps the others. Unknown node ids in the hash SHALL be ignored with a visible notice.
 
 #### Scenario: Selection survives navigation
 - **GIVEN** `gantry/corexy` is selected
