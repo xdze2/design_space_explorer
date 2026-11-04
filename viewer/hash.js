@@ -1,7 +1,8 @@
 export const DEFAULT_HASH = '#/';
 
-// '#/?pick=a,b&view=<id>' -> { pick, view, unknown }. Obsolete parameters (up, down, layout) are ignored.
-// Old links still read: '#/design' and '#/graph' as the same page, '#/browse[/<id>]' as view=<id> (root means no view).
+// '#/?view=<id>&fold=<id>,<id>&peek=<id>,<id>' -> { view, fold, peek, unknown, pickIgnored }. View state only: the design is not in the URL.
+// Obsolete parameters (up, down, layout) are ignored; `pick` is ignored too and reported in `pickIgnored`.
+// Old links still read: '#/design', '#/graph' and '#/selection' as the page, '#/browse[/<id>]' as view=<id> (root means none).
 // `known` is a Set of node ids; ids not in it are dropped and reported in `unknown`.
 export function parseHash(hash, known) {
   const m = hash.replace(/^#/, '').match(/^\/([a-z]*)(?:\/([^?]*))?(?:\?(.*))?$/);
@@ -12,18 +13,22 @@ export function parseHash(hash, known) {
     return false;
   };
   const query = new URLSearchParams(m?.[3] ?? '');
-  const pick = (query.get('pick') ?? '').split(',').filter(Boolean).filter(keep);
+  const list = (name) => [...new Set((query.get(name) ?? '').split(',').filter(Boolean))].filter(keep);
   let view = query.get('view') || '';
   if (!view && m?.[1] === 'browse') {
     const legacy = decodeURIComponent(m[2] ?? '');
     if (legacy && legacy !== 'root') view = legacy;
   }
-  return { pick, view: view && keep(view) ? view : null, unknown };
+  view = view && keep(view) ? view : null;
+  const fold = list('fold');
+  const peek = list('peek');
+  return { view, fold, peek, unknown, pickIgnored: query.has('pick') };
 }
 
-export function buildHash({ pick = [], view = null } = {}) {
+export function buildHash({ view = null, fold = [], peek = [] } = {}) {
   const query = [];
-  if (pick.length) query.push(`pick=${pick.join(',')}`);
   if (view) query.push(`view=${view}`);
+  if (fold.length) query.push(`fold=${fold.join(',')}`);
+  if (peek.length) query.push(`peek=${peek.join(',')}`);
   return `#/${query.length ? `?${query.join('&')}` : ''}`;
 }

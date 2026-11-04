@@ -1,4 +1,4 @@
-import { analyze, undecided } from './select.js';
+import { analyzeDesign, clean, entryOf } from './design.js';
 
 // cyrb53: small synchronous 53-bit string hash. Cache keys and change detection only.
 function hash(str) {
@@ -13,48 +13,80 @@ function hash(str) {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
 }
 
-const sorted = (pick) => [...pick].sort();
+// Same value, same text: object keys sorted, arrays kept in order.
+const canonical = (v) => (Array.isArray(v) ? `[${v.map(canonical)}]`
+  : v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`)}}`
+  : JSON.stringify(v));
 
-export const selectionKey = (pick) => hash(sorted(pick).join(','));
+// A brief belongs to a design, not to what it holds: it stays found while the design is edited.
+export const designKey = (design) => design.id;
 
-// Changes when anything the prompt says about a selected node changes.
-export function contentHash(graph, pick) {
-  const parts = sorted(pick).map((id) => {
-    const n = graph.byId.get(id) ?? {};
-    return JSON.stringify([id, n.title, n.body, n.sources, n.requires, n.excludes]);
+// Changes when anything the prompt says changes: the design (without its id) and the content of the chosen nodes.
+// Opening, folding and peeking are not in the design, so they cannot change it.
+export function contentHash(graph, design) {
+  const { design: d } = clean(graph, design);
+  const { id, ...doc } = d;
+  const chosen = [...new Set(Object.values(d.functions).map((e) => e.choice).filter(Boolean))].sort();
+  const nodes = chosen.map((cid) => {
+    const n = graph.byId.get(cid) ?? {};
+    return [cid, n.title, n.body, n.sources, n.requires, n.excludes];
   });
-  return hash(parts.join('\n'));
+  return hash(canonical([doc, nodes]));
 }
 
 export function promptVersion(template) {
   return /^<!--\s*version:\s*(\S+?)\s*-->/.exec(template)?.[1] ?? 'unknown';
 }
 
-export function buildPrompt(template, graph, pick) {
+export function buildPrompt(template, graph, design) {
   const title = (id) => graph.byId.get(id)?.title ?? id;
-  const { missing, conflicts } = analyze(graph, pick);
-  const selected = pick.map((id) => {
+  const a = analyzeDesign(graph, design);
+  const bullet = (lines) => lines.join('\n') || 'None.';
+
+  const constraints = Object.entries(design.constraints).map(([id, v]) => `- ${title(id)} (${id}): ${v}`);
+  const head = [
+    `Name: ${design.name}`,
+    `Intent: ${design.intent || 'not given'}`,
+    '',
+    'Constraint values:',
+    bullet(constraints),
+  ].join('\n');
+
+  const selected = [...a.chosen].map(([fnId, id]) => {
     const n = graph.byId.get(id);
     return [
       `### ${n.title} (${id})`,
-      `Decision: ${title(n.why?.[0])}. Confidence: ${n.confidence ?? 'unknown'}.`,
+      `Decision: ${title(fnId)}. Confidence: ${n.confidence ?? 'unknown'}.`,
       '',
       (n.body ?? '').trim(),
       '',
       `Sources: ${(n.sources ?? []).join('; ') || 'none'}`,
     ].join('\n');
-  }).join('\n\n');
+  }).join('\n\n') || 'None.';
+
+  const explored = Object.keys(design.functions).map((fnId) => {
+    const e = entryOf(design, fnId);
+    const lines = [];
+    if (e.shortlist.length) lines.push(`  - Shortlisted: ${e.shortlist.map((s) => `${title(s)} (${s})`).join(', ')}`);
+    for (const r of e.rejected) lines.push(`  - Rejected: ${title(r.id)} (${r.id}), reason: ${r.reason}`);
+    if (e.notes) lines.push(`  - Notes: ${e.notes}`);
+    if (!lines.length) return null;
+    return [`- ${title(fnId)} (${fnId})${a.active.has(fnId) ? '' : ' [not part of the current design]'}`, ...lines].join('\n');
+  }).filter(Boolean);
+
   const problems = [
-    ...conflicts.map(([a, b]) => `- Conflict: ${title(a)} (${a}) excludes ${title(b)} (${b}).`),
-    ...[...missing].map(([id, by]) =>
+    ...a.conflicts.map(([x, y]) => `- Conflict: ${title(x)} (${x}) excludes ${title(y)} (${y}).`),
+    ...[...a.required].map(([id, by]) =>
       `- Missing requirement: ${title(id)} (${id}), required by ${by.map(title).join(', ')}.`),
-  ].join('\n') || 'None.';
-  const open = undecided(graph, pick).map((d) => `- ${d.title} (${d.id})`).join('\n') || 'None.';
+  ];
+  const open = a.undecided.map((id) => `- ${title(id)} (${id})`);
   return template
     .replace(/^<!--.*?-->\n?/s, '')
+    .replace('{{design}}', () => head)
     .replace('{{selected}}', () => selected)
-    .replace('{{problems}}', () => problems)
-    .replace('{{undecided}}', () => open);
+    .replace('{{explored}}', () => bullet(explored))
+    .replace('{{problems}}', () => bullet(problems))
+    .replace('{{undecided}}', () => bullet(open));
 }
 
 // Brief file: restricted frontmatter (`key: value` lines between `---`), then Markdown.

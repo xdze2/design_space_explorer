@@ -93,37 +93,51 @@ The build prints every error and writes nothing if validation fails.
 
 ## Viewer
 
-A static page (plain HTML and ES modules, no build step) to browse the graph and try combinations of solutions.
+A static page (plain HTML and ES modules, no build step) to browse the graph and build a design from it.
 
 ```sh
 npm run build   # refresh graph.json
 npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
 ```
 
-![Viewer with a selection: outline graph on the left, chosen solutions on the right](docs/selection.png)
+![Viewer with a design: the design tree on the left, the design overview on the right](docs/design-overview.png)
 
-One full-width page, no tabs and no top bar:
+One full-width page, no tabs, no top bar and no modal:
 
-- **Left panel (graph)**: a legend of the four type icons (function ring, solution diamond, component square, constraint triangle), then the whole `how` tree as an indented outline in the author's order, one fixed-height line per node starting with its type icon, indentation encodes depth, followed by the constraint nodes as a separate group. A node with several whys is repeated, with its children listed once. A *decision* is a function whose how-targets are solutions. Right of the names, three lanes aligned across all lines: **state tags** (`chosen`, `excluded by X`, `undecided`, `needs X`, `needed by X`, `conflict`), a **link lane** where curves join the lines of linked nodes (`requires` with an arrow, `excludes` red dashed, `compatible_with` dotted; faint, lit for the open or hovered line), and a **`?` button** that opens the node. Clicking a solution's line **toggles** it (one solution per decision; a solution excluded by the selection is disabled and names the cause). Clicking a function, component or constraint opens it.
-- **Right panel (main view)**: a small header with the counts (picked, undecided, problems) and **Reset** (shown when something is selected), then the brief or prompt box, conflicts, required-but-unselected nodes, the chosen solutions with their text, and undecided decisions.
-- **Node modal** over the page (Esc, `×` or a click outside closes it): type icon and title, text, sources, links for `why`, `how`, `constrains`, `constrained_by`, `requires`, `excludes` and `compatible_with`, a select/remove button for a solution, and for a decision its solutions with Choose buttons.
+- **Left panel (graph)**: the design tree: one line per function with a type icon and a status mark (`○` open, `◐` exploring, `●` decided), its solutions as **chips** on the line in the author's order, and the constraint nodes after the tree, and a **legend** pinned to the bottom of the panel. A chip shows its state in the design by a mark as well as colour: `✓` chosen, `★` shortlisted, `✕` rejected, `⊘` excluded by a chosen solution, `+` required by a chosen solution, `⚠` for a choice in conflict; the tooltip names the cause. Below a function only its **chosen** solution's sub-functions and components are listed. `▸` next to a chip **peeks** at what that solution brings (listed dormant, in italics; one peek per function), `▾` next to a function line **collapses** it (the line then shows how many lines are hidden). A function reached through several solutions is repeated, with its children listed once. Clicking a line or a chip only **opens** the node; it never changes the design.
+- **Right panel**: the open node, or, with none open (`×` or Esc), the design overview.
+  - **Node panel**: breadcrumb (the path through your choices, else the first why), title, text and sources, context (why, other solutions), implications (brings, requires, excludes, constrained by), its state in your design, a **what-if** preview for a solution you have not chosen (what it replaces, brings in, drops, requires, conflicts with), then the edit controls: **Choose / Unchoose**, **Shortlist / Unshortlist**, **Reject…** (asks for a reason) / **Unreject** on a solution, a notes field on a function (which also lists its solutions with the same buttons), a value field on a constraint, and **Undo**.
+  - **Overview**: the design's name and intent (editable), counts (decided, undecided, problems), the brief or the prompt box, conflicts, required-but-not-chosen solutions, decided and undecided functions, and **Export**, **Import…**, **New design** and **Undo**.
 
-![Node modal over the page](docs/node-modal.png)
+![Node panel for a solution excluded by the current choice](docs/node-panel.png)
 
-The selection and the open node live in the URL hash, so reload, sharing and the back button work: `#/?pick=<id>,<id>&view=<id>`, e.g. `#/?pick=861c9946,e67a2f12&view=18f0f7e8`. Old forms still open the page: `#/design`, `#/graph`, `#/selection`, and `#/browse/<node-id>` (as `view=<node-id>`).
+### The design document
 
-Unknown ids in the hash are ignored with a notice.
+Your design is one JSON document, separate from the graph and from the URL: id, name, intent, a value for each constraint you care about, and per function a `status` (`open`, `exploring`, `decided`), a `choice`, a `shortlist`, `rejected` solutions with a reason, and `notes`. It changes only through the buttons above, is saved in the browser's `localStorage` after every edit, and can be undone (back to when the page was opened; the history is not kept across reloads).
+
+```json
+{ "format": 1, "id": "d-3f9a1c2e", "name": "My plotter", "intent": "A quiet A3 plotter",
+  "constraints": { "2cc55003": "A4, sometimes A3" },
+  "functions": { "854ac5e5": { "status": "decided", "choice": "1f4df7b0",
+    "shortlist": ["2e099434"], "rejected": [{ "id": "a316aecc", "reason": "too wobbly" }], "notes": "" } } }
+```
+
+- A solution can only be chosen, shortlisted or rejected under a function it belongs to; one choice per function. Choosing an excluded solution is allowed and shows as a conflict. Entries of functions that are not reached by your choices are kept, and count again when they are.
+- **Export** downloads `<name>.design.json`; **Import…** replaces the current design with such a file (undoable). Unknown node ids and invalid entries are dropped, with a notice naming them; a file that is not a design is refused. Use this to keep a copy or move a design between browsers.
+- If browser storage is blocked, the page works with the design in memory and says it will not be kept.
+
+The URL hash holds the view only, so reload, sharing and the back button work: `#/?view=<id>&fold=<id>,<id>&peek=<id>,<id>` (open node, collapsed functions, peeked solutions). Old forms still open the page: `#/design`, `#/graph`, `#/selection` and `#/browse/<node-id>` (as `view=<node-id>`); a `pick=` list is ignored with a notice, since choices now live in the design. Unknown ids in the hash are ignored with a notice.
 
 ## Briefs
 
-The viewer makes no LLM calls. A written brief for a selection comes from an AI outside the page:
+The viewer makes no LLM calls. A written brief for a design comes from an AI outside the page:
 
-1. Select a combination, expand "Prompt for an AI brief" and press "Copy prompt".
+1. Build a design, expand "Prompt for an AI brief" in the overview and press "Copy prompt".
 2. Paste it into any AI and save its answer as a Markdown file, e.g. `brief.md`.
-3. Store it: `npm run brief -- save 861c9946,e67a2f12 brief.md --model <model name>`.
+3. Press **Export** and store the brief for that design file: `npm run brief -- save my-plotter.design.json brief.md --model <model name>`.
 
-Reload the page: the brief is shown at the top of the main view with the model name.
+Reload the page: the brief is shown in the overview with the model name.
 
-Cache layout: `briefs/<key>.md` (frontmatter `pick`, `content_hash`, `model`, `prompt_version`, `created`, then the Markdown) and `briefs/index.json` mapping each selection key to its file. The key does not depend on the order of the ids. Saving again for the same selection replaces the brief. The prompt template is `prompts/brief.md`.
+Cache layout: `briefs/<design id>.md` (frontmatter `design_id`, `design_name`, `content_hash`, `model`, `prompt_version`, `created`, then the Markdown) and `briefs/index.json` mapping each design id to its file. The brief stays attached to the design while you edit it; saving again for the same design replaces it. `save` fails, and writes nothing, if the design file names a node that is not in `graph.json` or holds an entry that does not fit it. The prompt template is `prompts/brief.md`.
 
-A brief is marked **stale** when the title, body, sources, `requires` or `excludes` of a selected node changed after it was saved. The prompt box is then shown again so a new brief can be made. Changes to unrelated nodes do not matter.
+A brief is marked **stale** when the design changed after it was saved (a choice, shortlist, rejection, note, constraint value, name or intent), or when the title, body, sources, `requires` or `excludes` of a chosen node changed. Opening, collapsing and peeking never make it stale. The prompt box is then shown again so a new brief can be made. A New design has no brief.

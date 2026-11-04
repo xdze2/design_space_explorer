@@ -1,16 +1,18 @@
-import { parseHash, buildHash, DEFAULT_HASH } from './hash.js';
+import { parseHash, buildHash } from './hash.js';
+import { analyzeDesign } from './design.js';
+import { createStore } from './store.js';
 import { render as renderGraph } from './views/graph.js';
-import { render as renderMain } from './views/main.js';
+import { render as renderOverview } from './views/overview.js';
 import { render as renderNode } from './views/node.js';
 import { el } from './dom.js';
 
 const $ = (id) => document.getElementById(id);
 const graphPanel = $('graph-panel');
-const mainPanel = $('main-panel');
-const modal = $('modal');
+const nodePanel = $('node-panel');
 let graph;
-let closeHref = null;
-let current;
+let store;
+let route = null;
+let shownView;
 
 async function load() {
   const res = await fetch('../graph.json');
@@ -24,53 +26,65 @@ async function load() {
   return { nodes: data.nodes, byId, rootId: data.root };
 }
 
-// Replace a panel's content, keeping its scroll position.
-function fill(panel, ...nodes) {
-  const top = panel.scrollTop;
-  panel.replaceChildren(...nodes.filter((n) => n != null && n !== false && n !== ""));
-  panel.scrollTop = top;
+// localStorage can throw on access (blocked site data), so even looking at it is guarded.
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
-function route() {
-  if (!location.hash) {
-    location.hash = DEFAULT_HASH;
-    return;
-  }
-  current = parseHash(location.hash, new Set(graph.byId.keys()));
-  const { pick, view, unknown } = current;
-  const notice = unknown.length
-    ? el('p', { class: 'notice' }, `Ignored unknown node id: ${unknown.join(', ')}`)
-    : '';
-  fill(graphPanel, renderGraph(graph, current));
-  fill(mainPanel, notice, renderMain(graph, current));
+// Replace a panel's content; scroll to the top, or keep the position.
+function fill(panel, nodes, { top = false } = {}) {
+  const scroll = top ? 0 : panel.scrollTop;
+  panel.replaceChildren(...nodes.filter((n) => n != null && n !== false && n !== ''));
+  panel.scrollTop = scroll;
+}
 
-  // The node sits in a modal over the page, which stays rendered underneath.
-  if (view) {
-    closeHref = buildHash({ pick });
-    const close = el('a', { class: 'close', href: closeHref, 'aria-label': 'Close' }, '×');
-    const dialog = el('div', { class: 'dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': graph.byId.get(view).title },
-      close, renderNode(graph, current));
-    const scrim = el('div', { class: 'scrim' }, dialog);
-    scrim.addEventListener('click', (e) => {
-      if (e.target === scrim) location.hash = closeHref;
-    });
-    modal.replaceChildren(scrim);
-    modal.hidden = false;
-  } else {
-    closeHref = null;
-    modal.replaceChildren();
-    modal.hidden = true;
+function notices() {
+  const out = [];
+  if (route.unknown.length) out.push(el('p', { class: 'notice' }, `Ignored unknown node id: ${route.unknown.join(', ')}`));
+  if (route.pickIgnored) out.push(el('p', { class: 'notice' }, 'This link has a "pick" list, which is no longer read: choices now live in your design, in this browser. Open a node and choose there.'));
+  store.notices.forEach(({ kind, text }) => out.push(el('p', { class: kind === 'error' ? 'error' : 'notice' }, text)));
+  if (store.notices.length) {
+    const dismiss = el('button', { type: 'button', class: 'dismiss' }, 'Dismiss messages');
+    dismiss.addEventListener('click', () => store.dismissNotices());
+    out.push(dismiss);
   }
+  return out;
+}
+
+function render() {
+  const analysis = analyzeDesign(graph, store.design);
+  const body = route.view ? renderNode(graph, store, analysis, route) : renderOverview(graph, store, analysis, route);
+  fill(graphPanel, [renderGraph(graph, store.design, analysis, route)]);
+  // The node panel starts at the top for a new node and keeps its place otherwise (graph panel: always kept).
+  fill(nodePanel, [...notices(), body], { top: route.view !== shownView });
+  shownView = route.view;
+  document.body.classList.toggle('node-open', !!route.view);
+}
+
+function onHash() {
+  route = parseHash(location.hash, new Set(graph.byId.keys()));
+  render();
 }
 
 addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && closeHref) location.hash = closeHref;
+  if (e.key !== 'Escape' || !route?.view || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  location.hash = buildHash({ ...route, view: null });
 });
 
 try {
   graph = await load();
-  addEventListener('hashchange', route);
-  route();
+  store = createStore(graph, { storage: browserStorage() });
+  // Text fields commit on change; redrawing then could swallow the click that caused the blur, so only refresh Undo.
+  store.subscribe(({ quiet }) => {
+    if (!quiet) return render();
+    document.querySelectorAll('.undo-btn').forEach((b) => { b.disabled = !store.canUndo; });
+  });
+  addEventListener('hashchange', onHash);
+  onHash();
 } catch (e) {
-  fill(mainPanel, el('p', { class: 'error' }, `Could not load the graph: ${e.message}`));
+  fill(nodePanel, [el('p', { class: 'error' }, `Could not load the graph: ${e.message}`)]);
 }
