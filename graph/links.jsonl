@@ -1,37 +1,39 @@
-{"from":"39309dbe","to":"d378aed0","type":"compatible_with","src":"migration","hint":"V-slot wheels on 2020 extrusion compatible_with Cartesian, two Y rails"}
-{"from":"467f2cbc","to":"4c50ec2b","type":"compatible_with","src":"migration","hint":"FluidNC on ESP32 compatible_with Hobby servo (SG90/MG90S)"}
-{"from":"467f2cbc","to":"861c9946","type":"compatible_with","src":"migration","hint":"FluidNC on ESP32 compatible_with CoreXY"}
-{"from":"4c50ec2b","to":"467f2cbc","type":"compatible_with","src":"migration","hint":"Hobby servo (SG90/MG90S) compatible_with FluidNC on ESP32"}
-{"from":"4c50ec2b","to":"9c57ba17","type":"compatible_with","src":"migration","hint":"Hobby servo (SG90/MG90S) compatible_with GRBL on Arduino Uno + CNC Shield"}
-{"from":"9184df42","to":"e67a2f12","type":"compatible_with","src":"migration","hint":"Single-rail cantilever (AxiDraw style) compatible_with GT2 belt, 6 mm"}
-{"from":"9184df42","to":"ec58e5bb","type":"compatible_with","src":"migration","hint":"Single-rail cantilever (AxiDraw style) compatible_with MGN12 linear rails"}
-{"from":"9c57ba17","to":"861c9946","type":"compatible_with","src":"migration","hint":"GRBL on Arduino Uno + CNC Shield compatible_with CoreXY"}
-{"from":"9c57ba17","to":"d378aed0","type":"compatible_with","src":"migration","hint":"GRBL on Arduino Uno + CNC Shield compatible_with Cartesian, two Y rails"}
-{"from":"d378aed0","to":"39309dbe","type":"compatible_with","src":"migration","hint":"Cartesian, two Y rails compatible_with V-slot wheels on 2020 extrusion"}
-{"from":"d378aed0","to":"e67a2f12","type":"compatible_with","src":"migration","hint":"Cartesian, two Y rails compatible_with GT2 belt, 6 mm"}
-{"from":"e67a2f12","to":"9c57ba17","type":"compatible_with","src":"migration","hint":"GT2 belt, 6 mm compatible_with GRBL on Arduino Uno + CNC Shield"}
-{"from":"ec58e5bb","to":"9184df42","type":"compatible_with","src":"migration","hint":"MGN12 linear rails compatible_with Single-rail cantilever (AxiDraw style)"}
-{"from":"18cc3c4a","to":"9184df42","type":"excludes","src":"migration","hint":"Smooth rods and linear bearings excludes Single-rail cantilever (AxiDraw style)"}
-{"from":"18f0f7e8","to":"2456bdf6","type":"excludes","src":"migration","hint":"Leadscrew excludes H-bot"}
-{"from":"18f0f7e8","to":"861c9946","type":"excludes","src":"migration","hint":"Leadscrew excludes CoreXY"}
-{"from":"037e51d4","to":"4fa10308","type":"parent","src":"migration","hint":"Controller > DIY A3 pen plotter"}
-{"from":"0a54c8d2","to":"4fa10308","type":"parent","src":"migration","hint":"Pen lift > DIY A3 pen plotter"}
-{"from":"18cc3c4a","to":"f196a1a8","type":"parent","src":"migration","hint":"Smooth rods and linear bearings > Linear guide"}
-{"from":"18f0f7e8","to":"eb6774ed","type":"parent","src":"migration","hint":"Leadscrew > Drive type"}
-{"from":"2456bdf6","to":"b3a8fe22","type":"parent","src":"migration","hint":"H-bot > Gantry geometry"}
-{"from":"39309dbe","to":"f196a1a8","type":"parent","src":"migration","hint":"V-slot wheels on 2020 extrusion > Linear guide"}
-{"from":"467f2cbc","to":"037e51d4","type":"parent","src":"migration","hint":"FluidNC on ESP32 > Controller"}
-{"from":"4c50ec2b","to":"0a54c8d2","type":"parent","src":"migration","hint":"Hobby servo (SG90/MG90S) > Pen lift"}
-{"from":"5b1a91d1","to":"0a54c8d2","type":"parent","src":"migration","hint":"Solenoid > Pen lift"}
-{"from":"861c9946","to":"b3a8fe22","type":"parent","src":"migration","hint":"CoreXY > Gantry geometry"}
-{"from":"9184df42","to":"b3a8fe22","type":"parent","src":"migration","hint":"Single-rail cantilever (AxiDraw style) > Gantry geometry"}
-{"from":"9c57ba17","to":"037e51d4","type":"parent","src":"migration","hint":"GRBL on Arduino Uno + CNC Shield > Controller"}
-{"from":"b3a8fe22","to":"4fa10308","type":"parent","src":"migration","hint":"Gantry geometry > DIY A3 pen plotter"}
-{"from":"cf8cb098","to":"0a54c8d2","type":"parent","src":"migration","hint":"Z stepper or leadscrew > Pen lift"}
-{"from":"d378aed0","to":"b3a8fe22","type":"parent","src":"migration","hint":"Cartesian, two Y rails > Gantry geometry"}
-{"from":"e67a2f12","to":"eb6774ed","type":"parent","src":"migration","hint":"GT2 belt, 6 mm > Drive type"}
-{"from":"eb6774ed","to":"4fa10308","type":"parent","src":"migration","hint":"Drive type > DIY A3 pen plotter"}
-{"from":"ec58e5bb","to":"f196a1a8","type":"parent","src":"migration","hint":"MGN12 linear rails > Linear guide"}
-{"from":"f196a1a8","to":"4fa10308","type":"parent","src":"migration","hint":"Linear guide > DIY A3 pen plotter"}
-{"from":"2456bdf6","to":"e67a2f12","type":"requires","src":"migration","hint":"H-bot requires GT2 belt, 6 mm"}
-{"from":"861c9946","to":"e67a2f12","type":"requires","src":"migration","hint":"CoreXY requires GT2 belt, 6 mm"}
+{"from":"018d772f","to":"5249fcf9","type":"compatible_with","src":"LLM:claude-sonnet","hint":"Second synchronized Y motor compatible_with FluidNC on ESP32"}
+{"from":"dcefc61b","to":"5249fcf9","type":"compatible_with","src":"LLM:claude-sonnet","hint":"Servo pen lift compatible_with FluidNC on ESP32"}
+{"from":"2cc55003","to":"854ac5e5","type":"constrains","src":"LLM:claude-sonnet","hint":"Paper format constrains Move the pen in XY"}
+{"from":"2cc55003","to":"b6e812c9","type":"constrains","src":"LLM:claude-sonnet","hint":"Paper format constrains Guide the axes"}
+{"from":"46e36bf8","to":"2798fd6f","type":"constrains","src":"LLM:claude-sonnet","hint":"Line quality constrains Lift and lower the pen"}
+{"from":"46e36bf8","to":"b6e812c9","type":"constrains","src":"LLM:claude-sonnet","hint":"Line quality constrains Guide the axes"}
+{"from":"9dbd19bc","to":"55269563","type":"constrains","src":"LLM:claude-sonnet","hint":"Budget constrains Draw a design on paper with a pen"}
+{"from":"1f4df7b0","to":"5f53f3a8","type":"excludes","src":"LLM:claude-sonnet","hint":"CoreXY excludes Leadscrew drive"}
+{"from":"55904a34","to":"c7102c51","type":"excludes","src":"LLM:claude-sonnet","hint":"Solenoid pen lift excludes GRBL on Arduino Uno with CNC shield"}
+{"from":"5f53f3a8","to":"a316aecc","type":"excludes","src":"LLM:claude-sonnet","hint":"Leadscrew drive excludes Single-rail cantilever"}
+{"from":"1f4df7b0","to":"6d52ba8e","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"CoreXY > Transmit motor motion"}
+{"from":"1f4df7b0","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"CoreXY > Guide the axes"}
+{"from":"2798fd6f","to":"55904a34","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Lift and lower the pen > Solenoid pen lift"}
+{"from":"2798fd6f","to":"dcefc61b","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Lift and lower the pen > Servo pen lift"}
+{"from":"2e099434","to":"48664224","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Keep the gantry square"}
+{"from":"2e099434","to":"6d52ba8e","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Transmit motor motion"}
+{"from":"2e099434","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Guide the axes"}
+{"from":"48664224","to":"018d772f","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Keep the gantry square > Second synchronized Y motor"}
+{"from":"48664224","to":"1203960b","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Keep the gantry square > Stiff cross rod"}
+{"from":"55269563","to":"2798fd6f","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Draw a design on paper with a pen > Lift and lower the pen"}
+{"from":"55269563","to":"854ac5e5","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Draw a design on paper with a pen > Move the pen in XY"}
+{"from":"55269563","to":"a2651c78","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Draw a design on paper with a pen > Turn G-code into motion"}
+{"from":"6d52ba8e","to":"5f53f3a8","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Transmit motor motion > Leadscrew drive"}
+{"from":"6d52ba8e","to":"9b55d6fc","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Transmit motor motion > GT2 belt drive"}
+{"from":"854ac5e5","to":"1f4df7b0","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > CoreXY"}
+{"from":"854ac5e5","to":"2e099434","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > Cartesian, two Y rails"}
+{"from":"854ac5e5","to":"a316aecc","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > Single-rail cantilever"}
+{"from":"9b55d6fc","to":"55687554","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"GT2 belt drive > GT2 pulleys and idlers"}
+{"from":"9b55d6fc","to":"7e4b293b","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"GT2 belt drive > GT2 belt (reinforced core)"}
+{"from":"a2651c78","to":"5249fcf9","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Turn G-code into motion > FluidNC on ESP32"}
+{"from":"a2651c78","to":"c7102c51","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Turn G-code into motion > GRBL on Arduino Uno with CNC shield"}
+{"from":"a316aecc","to":"6d52ba8e","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Single-rail cantilever > Transmit motor motion"}
+{"from":"a316aecc","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Single-rail cantilever > Guide the axes"}
+{"from":"b6e812c9","to":"3bd9d7e2","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Guide the axes > V-slot wheels on aluminium extrusion"}
+{"from":"b6e812c9","to":"3c12da47","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Guide the axes > Linear rails and bearing blocks"}
+{"from":"dcefc61b","to":"378780c6","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Servo pen lift > Spring-loaded 3D-printed pen holder"}
+{"from":"dcefc61b","to":"ce557edc","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Servo pen lift > Micro servo"}
+{"from":"1203960b","to":"9b55d6fc","type":"requires","src":"LLM:claude-sonnet","hint":"Stiff cross rod requires GT2 belt drive"}
+{"from":"1f4df7b0","to":"9b55d6fc","type":"requires","src":"LLM:claude-sonnet","hint":"CoreXY requires GT2 belt drive"}

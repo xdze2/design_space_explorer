@@ -1,5 +1,5 @@
-// Preorder walk from the root: one row per node, { id, depth, repeat }.
-// A node reached again through another parent is listed again, marked as a repeat, and its children are not listed again.
+// Preorder walk of the how links from the root: one row per node, { id, depth, repeat }, then the constraint nodes as plain rows.
+// A node reached again through another why is listed again, marked as a repeat, and its how nodes are not listed again.
 export function outlineRows(graph) {
   const rows = [];
   const seen = new Set();
@@ -8,9 +8,10 @@ export function outlineRows(graph) {
     rows.push({ id, depth, repeat });
     if (repeat) return;
     seen.add(id);
-    for (const c of graph.byId.get(id).children ?? []) if (graph.byId.has(c)) visit(c, depth + 1);
+    for (const c of graph.byId.get(id).how ?? []) if (graph.byId.has(c)) visit(c, depth + 1);
   };
   visit(graph.rootId, 0);
+  for (const n of graph.nodes) if (n.type === 'constraint') rows.push({ id: n.id, depth: 0, repeat: false });
   return rows;
 }
 

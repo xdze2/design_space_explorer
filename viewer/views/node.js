@@ -2,6 +2,7 @@ import { renderMarkdown } from '../markdown.js';
 import { buildHash } from '../hash.js';
 import { analyze, toggle } from '../select.js';
 import { el } from '../dom.js';
+import { typeIcon } from '../icons.js';
 
 function edgeList(graph, label, ids, href) {
   if (!ids?.length) return null;
@@ -17,7 +18,7 @@ function edgeList(graph, label, ids, href) {
   return el('p', {}, `${label}: `, ...links.flatMap((a, i) => (i ? [', ', a] : [a])));
 }
 
-// Node detail, mounted as a drawer (Design) or the main pane (Graph). `route` is { pick, view }.
+// Node detail, shown in the modal. `route` is { pick, view }.
 export function render(graph, { pick, view }) {
   const node = graph.byId.get(view);
   const at = (id) => buildHash({ pick, view: id });
@@ -25,16 +26,17 @@ export function render(graph, { pick, view }) {
   const body = el('div', { class: 'body' });
   body.innerHTML = renderMarkdown(node.body ?? '');
 
-  const action = node.type === 'option'
+  const action = node.type === 'solution'
     ? el('p', {}, el('a', { class: 'button', href: choose(node.id) },
-      pick.includes(node.id) ? 'Remove from selection' : 'Select this option'))
+      pick.includes(node.id) ? 'Remove from selection' : 'Select this solution'))
     : null;
 
   let options = null;
-  if (node.type === 'decision') {
+  const solutions = (node.how ?? []).filter((id) => graph.byId.get(id)?.type === 'solution');
+  if (node.type === 'function' && solutions.length) {
     const { excluded } = analyze(graph, pick);
     const title = (id) => graph.byId.get(id)?.title ?? id;
-    options = el('ul', { class: 'options' }, ...(node.children ?? []).map((id) => {
+    options = el('ul', { class: 'options' }, ...solutions.map((id) => {
       const on = pick.includes(id);
       const by = excluded.get(id);
       if (by && !on) {
@@ -49,12 +51,16 @@ export function render(graph, { pick, view }) {
   }
 
   return el('div', { class: 'node' },
-    el('h2', {}, node.title),
+    el('h2', {}, typeIcon(node.type), node.title),
     el('p', { class: 'meta' }, `${node.type} · confidence: ${node.confidence ?? 'n/a'} · `, el('code', {}, node.id)),
     action,
     body,
-    options ? el('h3', {}, 'Options') : null,
+    options ? el('h3', {}, 'Solutions') : null,
     options,
+    edgeList(graph, 'Why (answers)', node.why, at),
+    edgeList(graph, 'How', node.how, at),
+    edgeList(graph, 'Constrains', node.constrains, at),
+    edgeList(graph, 'Constrained by', node.constrained_by, at),
     edgeList(graph, 'Requires', node.requires, at),
     edgeList(graph, 'Excludes', node.excludes, at),
     edgeList(graph, 'Compatible with', node.compatible_with, at),

@@ -37,7 +37,7 @@ export function buildPrompt(template, graph, pick) {
     const n = graph.byId.get(id);
     return [
       `### ${n.title} (${id})`,
-      `Decision: ${title(n.parent)}. Confidence: ${n.confidence ?? 'unknown'}.`,
+      `Decision: ${title(n.why?.[0])}. Confidence: ${n.confidence ?? 'unknown'}.`,
       '',
       (n.body ?? '').trim(),
       '',

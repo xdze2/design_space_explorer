@@ -52,7 +52,7 @@ async function fillBrief(slot, graph, pick) {
     slot.append(el('section', { class: 'brief' },
       el('h3', {}, 'Brief'),
       el('p', { class: 'brief-meta' }, `Written by ${brief.meta.model ?? 'unknown'}`,
-        brief.stale ? el('span', { class: 'stale' }, ' · stale: the selected options changed since this brief was written') : ''),
+        brief.stale ? el('span', { class: 'stale' }, ' · stale: the selected solutions changed since this brief was written') : ''),
       body));
   } else {
     slot.append(el('p', { class: 'brief-none' }, 'No brief exists for this selection yet.'));
@@ -64,10 +64,18 @@ export function render(graph, { pick, view }) {
   const { missing, conflicts } = analyze(graph, pick);
   const title = (id) => graph.byId.get(id)?.title ?? id;
   const browse = (id) => el('a', { href: buildHash({ pick, view: id }) }, title(id));
-  const page = el('div', { class: 'design' }, el('h2', {}, 'Design'));
+  const open = undecided(graph, pick);
+  const problems = missing.size + conflicts.length;
+  const header = el('header', { class: 'summary' },
+    el('h2', {}, 'Design'),
+    el('span', { class: 'counts' },
+      `${pick.length} picked · ${open.length} undecided · `,
+      el('span', { class: problems ? 'problems' : '' }, `${problems} ${problems === 1 ? 'problem' : 'problems'}`)),
+    pick.length ? el('a', { class: 'reset', href: buildHash({ view }) }, 'Reset') : null);
+  const page = el('div', { class: 'design' }, header);
 
   if (!pick.length) {
-    page.append(el('p', { class: 'hint' }, 'Nothing selected yet. Click the dot of an option in the graph, or a node name to read it first.'));
+    page.append(el('p', { class: 'hint' }, 'Nothing selected yet. Click a solution in the graph to choose it, or the ? of any line to read it first.'));
   } else {
     const slot = el('div', { class: 'brief-slot' });
     page.append(slot);
@@ -90,19 +98,18 @@ export function render(graph, { pick, view }) {
     );
   }
   if (pick.length) {
-    page.append(el('h3', {}, 'Chosen options'));
+    page.append(el('h3', {}, 'Chosen solutions'));
     for (const id of pick) {
       const node = graph.byId.get(id);
       const body = el('div', { class: 'body' });
       body.innerHTML = renderMarkdown(node.body ?? '');
       page.append(el('article', { class: 'chosen-option' },
-        el('h4', {}, node.title, ' ', el('small', {}, `(${graph.byId.get(node.parent)?.title ?? node.parent})`)),
+        el('h4', {}, node.title, ' ', el('small', {}, `(${title(node.why?.[0])})`)),
         body,
         el('p', { class: 'sources' }, 'Sources: ', (node.sources ?? []).join('; ') || 'none', ' · ', browse(id)),
       ));
     }
   }
-  const open = undecided(graph, pick);
   if (open.length) {
     page.append(
       el('h3', {}, 'Undecided'),

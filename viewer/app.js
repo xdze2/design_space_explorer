@@ -1,12 +1,10 @@
 import { parseHash, buildHash, DEFAULT_HASH } from './hash.js';
 import { render as renderGraph } from './views/graph.js';
 import { render as renderMain } from './views/main.js';
-import { render as renderTopbar } from './views/topbar.js';
 import { render as renderNode } from './views/node.js';
 import { el } from './dom.js';
 
 const $ = (id) => document.getElementById(id);
-const topbar = $('topbar');
 const graphPanel = $('graph-panel');
 const mainPanel = $('main-panel');
 const modal = $('modal');
@@ -22,9 +20,8 @@ async function load() {
   });
   if (!Array.isArray(data?.nodes)) throw new Error('graph.json has no "nodes" array');
   const byId = new Map(data.nodes.map((n) => [n.id, n]));
-  const root = data.nodes.find((n) => n.type === 'root');
-  if (!root) throw new Error('graph.json has no root node');
-  return { nodes: data.nodes, byId, rootId: root.id };
+  if (!byId.has(data.root)) throw new Error('graph.json has no valid "root" id');
+  return { nodes: data.nodes, byId, rootId: data.root };
 }
 
 // Replace a panel's content, keeping its scroll position.
@@ -44,7 +41,6 @@ function route() {
   const notice = unknown.length
     ? el('p', { class: 'notice' }, `Ignored unknown node id: ${unknown.join(', ')}`)
     : '';
-  fill(topbar, ...renderTopbar(graph, current));
   fill(graphPanel, renderGraph(graph, current));
   fill(mainPanel, notice, renderMain(graph, current));
 

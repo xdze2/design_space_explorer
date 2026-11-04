@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Edit the design graph: create nodes, add and remove links, print the tree, lint.
 
-Standard library only. Nodes are graph/**/*.md (frontmatter `id` and `title` are read
+Standard library only. Nodes are graph/*.md (frontmatter `id`, `title` and `type` are read
 here); links live in graph/links.jsonl, which only this tool writes, in canonical form.
 The Node build (scripts/build-graph.mjs) stays the full validator.
 """
@@ -12,10 +12,12 @@ import secrets
 import sys
 from pathlib import Path
 
-LINK_TYPES = ("parent", "requires", "excludes", "compatible_with")
-NODE_TYPES = ("root", "decision", "option", "component")
+LINK_TYPES = ("how", "constrains", "requires", "excludes", "compatible_with")
+NODE_TYPES = ("function", "solution", "component", "constraint")
+HOW_PAIRS = (("function", "function"), ("function", "solution"), ("solution", "function"), ("solution", "component"))
+SELECTABLE = ("solution", "component")
 CONFIDENCES = ("low", "medium", "high")
-KEY_ORDER = ("from", "to", "type", "src", "hint")
+KEY_ORDER = ("from", "to", "type", "order", "src", "hint")
 DEFAULT_GRAPH_DIR = Path(__file__).resolve().parent.parent / "graph"
 
 
@@ -53,7 +55,7 @@ def read_frontmatter(path):
 def read_nodes(graph_dir):
     """Return {id: {"id", "title", "path"}}."""
     nodes = {}
-    for path in sorted(graph_dir.rglob("*.md")):
+    for path in sorted(graph_dir.glob("*.md")):
         meta = read_frontmatter(path)
         node_id = meta.get("id")
         if not node_id:
@@ -89,7 +91,7 @@ def sort_key(link):
 def hint_for(link, nodes):
     a = nodes[link["from"]]["title"]
     b = nodes[link["to"]]["title"]
-    return f"{a} > {b}" if link["type"] == "parent" else f"{a} {link['type']} {b}"
+    return f"{a} > {b}" if link["type"] == "how" else f"{a} {link['type']} {b}"
 
 
 def canonical_line(link):
@@ -122,22 +124,64 @@ def resolve(ref, nodes):
     return matches[0]
 
 
-def parents_of(links):
-    parents = {}
+def whys_of(links):
+    """{node: [why ids]} over the how links, in file order."""
+    whys = {}
     for link in links:
-        if link["type"] == "parent":
-            parents.setdefault(link["from"], []).append(link["to"])
-    return parents
+        if link["type"] == "how":
+            whys.setdefault(link["to"], []).append(link["from"])
+    return whys
 
 
-def ancestors(node_id, parents):
-    seen, stack = set(), list(parents.get(node_id, []))
+def hows_of(links):
+    """{node: [how ids]} over the how links, in file order."""
+    hows = {}
+    for link in links:
+        if link["type"] == "how":
+            hows.setdefault(link["from"], []).append(link["to"])
+    return hows
+
+
+def ordered_hows(links, nodes):
+    """{node: [how ids]} in author order: `order` ascending, then links without one by title and id (as the build)."""
+    out = {}
+    for link in links:
+        if link["type"] == "how" and link["to"] in nodes:
+            out.setdefault(link["from"], []).append(link)
+    rank = lambda l: (l["order"] if isinstance(l.get("order"), int) else float("inf"), nodes[l["to"]]["title"].lower(), l["to"])
+    return {p: [l["to"] for l in sorted(ls, key=rank)] for p, ls in out.items()}
+
+
+def ancestors(node_id, whys):
+    seen, stack = set(), list(whys.get(node_id, []))
     while stack:
         cur = stack.pop()
         if cur not in seen:
             seen.add(cur)
-            stack.extend(parents.get(cur, []))
+            stack.extend(whys.get(cur, []))
     return seen
+
+
+def check_pair(link_type, a, b):
+    """Raise GraphError when a link of this type may not join node types a and b."""
+    ok = True
+    if link_type == "how":
+        ok = (a, b) in HOW_PAIRS
+    elif link_type == "constrains":
+        ok = (a, b) == ("constraint", "function")
+    else:
+        ok = a in SELECTABLE and b in SELECTABLE
+    if not ok:
+        raise GraphError(f"a {link_type} link from {a} to {b} is not allowed")
+
+
+def check_mixed(nodes, hows, src, dst_type):
+    """Raise GraphError when src (a function) would get both function and solution how targets."""
+    if nodes[src]["type"] != "function":
+        return
+    kinds = {nodes[t]["type"] for t in hows.get(src, []) if t in nodes} | {dst_type}
+    if "function" in kinds and "solution" in kinds:
+        raise GraphError(f"{src}: a function's how targets must be all functions or all solutions")
 
 
 def title_key(nodes):
@@ -160,7 +204,7 @@ def yaml_scalar(text):
 # ---- commands ---------------------------------------------------------------
 
 def link_args(args):
-    """Yield (type, target reference) from the repeated --parent/--requires/... options."""
+    """Yield (type, target reference) from the repeated --how/--requires/... options."""
     for t in LINK_TYPES:
         for ref in getattr(args, t) or []:
             yield t, ref
@@ -171,15 +215,23 @@ def cmd_link(args, graph_dir, out):
     src = resolve(args.node, nodes)
     wanted = [(t, resolve(ref, nodes)) for t, ref in link_args(args)]
     if not wanted:
-        raise GraphError("nothing to link: give --parent, --requires, --excludes or --compatible-with")
+        raise GraphError("nothing to link: give --how, --constrains, --requires, --excludes or --compatible-with")
+    if args.order is not None and [t for t, _ in wanted] != ["how"]:
+        raise GraphError("--order goes with exactly one --how link")
     for t, dst in wanted:
         if src == dst:
             raise GraphError(f"{src}: cannot link a node to itself")
         if any(sort_key(l) == (t, src, dst) for l in links):
             raise GraphError(f"link already exists: {t} {src} -> {dst}")
-        if t == "parent" and src in ancestors(dst, parents_of(links)) | {dst}:
-            raise GraphError(f"parent link {src} -> {dst} would create a cycle")
-        links.append({"from": src, "to": dst, "type": t, "src": args.src})
+        check_pair(t, nodes[src]["type"], nodes[dst]["type"])
+        if t == "how":
+            if dst in ancestors(src, whys_of(links)):
+                raise GraphError(f"how link {src} -> {dst} would create a cycle")
+            check_mixed(nodes, hows_of(links), src, nodes[dst]["type"])
+        new = {"from": src, "to": dst, "type": t, "src": args.src}
+        if t == "how" and args.order is not None:
+            new = {**new, "order": args.order}
+        links.append(new)
     write_links(graph_dir, links, nodes)
     for t, dst in wanted:
         print(f"added {t}: {label(src, nodes)} -> {label(dst, nodes)}", file=out)
@@ -190,7 +242,7 @@ def cmd_unlink(args, graph_dir, out):
     src = resolve(args.node, nodes)
     wanted = [(t, resolve(ref, nodes)) for t, ref in link_args(args)]
     if not wanted:
-        raise GraphError("nothing to unlink: give --parent, --requires, --excludes or --compatible-with")
+        raise GraphError("nothing to unlink: give --how, --constrains, --requires, --excludes or --compatible-with")
     for t, dst in wanted:
         keep = [l for l in links if sort_key(l) != (t, src, dst)]
         if len(keep) == len(links):
@@ -201,19 +253,57 @@ def cmd_unlink(args, graph_dir, out):
         print(f"removed {t}: {label(src, nodes)} -> {label(dst, nodes)}", file=out)
 
 
+def cmd_order(args, graph_dir, out):
+    nodes, links = read_nodes(graph_dir), read_links(graph_dir)
+    parent = resolve(args.parent, nodes)
+    children = [resolve(ref, nodes) for ref in args.children]
+    if len(set(children)) != len(children):
+        raise GraphError("a child is listed twice")
+    actual = {l["to"] for l in links if l["type"] == "how" and l["from"] == parent}
+    for c in children:
+        if c not in actual:
+            raise GraphError(f"{label(c, nodes)} is not a how child of {label(parent, nodes)}")
+    position = {c: n for n, c in enumerate(children, 1)}
+    updated = []
+    for l in links:
+        if l["type"] == "how" and l["from"] == parent:
+            l = {k: v for k, v in l.items() if k != "order"}
+            if l["to"] in position:
+                l["order"] = position[l["to"]]
+        updated.append(l)
+    write_links(graph_dir, updated, nodes)
+    print(f"ordered {len(children)} of {len(actual)} children of {label(parent, nodes)}", file=out)
+
+
+def roots_of(nodes, links):
+    whys = whys_of(links)
+    return [i for i in nodes if nodes[i]["type"] == "function" and not whys.get(i)]
+
+
 def cmd_new(args, graph_dir, out):
     nodes, links = read_nodes(graph_dir), read_links(graph_dir)
     title = args.title.strip()
     if not title:
         raise GraphError("title must not be empty")
-    parent_ids = [resolve(ref, nodes) for ref in args.parent or []]
-    if args.type == "root":
-        if parent_ids:
-            raise GraphError("the root node has no parent")
-        if any(n["type"] == "root" for n in nodes.values()):
-            raise GraphError("the graph already has a root node")
-    elif not parent_ids:
-        raise GraphError(f"a {args.type} node needs at least one --parent")
+    why_ids = [resolve(ref, nodes) for ref in args.why or []]
+    constrains_ids = [resolve(ref, nodes) for ref in args.constrains or []]
+    if args.type == "constraint":
+        if why_ids:
+            raise GraphError("a constraint has no --why, use --constrains")
+        if not constrains_ids:
+            raise GraphError("a constraint needs at least one --constrains <function>")
+        for f in constrains_ids:
+            check_pair("constrains", "constraint", nodes[f]["type"])
+    else:
+        if constrains_ids:
+            raise GraphError("--constrains is only for constraint nodes")
+        if not why_ids:
+            if args.type != "function" or roots_of(nodes, links):
+                raise GraphError(f"a {args.type} node needs at least one --why" if args.type != "function" else "the graph already has a root function: give --why")
+        hows = hows_of(links)
+        for w in why_ids:
+            check_pair("how", nodes[w]["type"], args.type)
+            check_mixed(nodes, hows, w, args.type)
     while True:
         new_id = secrets.token_hex(4)
         if new_id not in nodes:
@@ -223,41 +313,49 @@ def cmd_new(args, graph_dir, out):
     while path.exists():
         path, n = graph_dir / f"{slug}-{n}.md", n + 1
     fields = [f'id: "{new_id}"', f"title: {yaml_scalar(title)}", f"type: {args.type}"]
-    if args.slot:
-        fields.append(f"slot: {yaml_scalar(args.slot)}")
     fields.append("sources: " + json.dumps(args.source or ["user"], ensure_ascii=False))
     if args.confidence:
         fields.append(f"confidence: {args.confidence}")
     graph_dir.mkdir(parents=True, exist_ok=True)
     path.write_text("---\n" + "\n".join(fields) + "\n---\n", encoding="utf-8")
     nodes[new_id] = {"id": new_id, "title": title, "type": args.type, "path": path}
-    links += [{"from": new_id, "to": p, "type": "parent", "src": args.src} for p in parent_ids]
+    links += [{"from": w, "to": new_id, "type": "how", "src": args.src} for w in why_ids]
+    links += [{"from": new_id, "to": f, "type": "constrains", "src": args.src} for f in constrains_ids]
     write_links(graph_dir, links, nodes)
     print(new_id, file=out)
 
 
 def cmd_tree(args, graph_dir, out):
     nodes, links = read_nodes(graph_dir), read_links(graph_dir)
-    parents = parents_of(links)
-    children = {}
-    for child, ps in parents.items():
-        for p in ps:
-            if child in nodes and p in nodes:
-                children.setdefault(p, []).append(child)
+    hows = {p: cs for p, cs in ordered_hows(links, nodes).items() if p in nodes}
+    constraints = {}
+    for l in links:
+        if l["type"] == "constrains" and l["from"] in nodes and l["to"] in nodes:
+            constraints.setdefault(l["to"], []).append(l["from"])
     key = title_key(nodes)
     printed = set()
 
-    def walk(node_id, depth):
+    def tag(parent_id, node_id):
+        kind = nodes[node_id]["type"]
+        if kind == "solution":
+            return " [OR]"
+        if kind == "function":
+            return " [AND]"
+        return " [part]" if nodes[parent_id]["type"] == "solution" else ""
+
+    def walk(node_id, depth, suffix):
         again = node_id in printed
-        print("  " * depth + label(node_id, nodes) + (" (repeated)" if again else ""), file=out)
+        print("  " * depth + label(node_id, nodes) + suffix + (" (repeated)" if again else ""), file=out)
         if again:
             return
         printed.add(node_id)
-        for child in sorted(children.get(node_id, []), key=key):
-            walk(child, depth + 1)
+        for child in hows.get(node_id, []):
+            walk(child, depth + 1, tag(node_id, child))
+        for c in sorted(constraints.get(node_id, []), key=key):
+            print("  " * (depth + 1) + label(c, nodes) + " [constraint]", file=out)
 
-    for top in sorted((i for i in nodes if not parents.get(i)), key=key):
-        walk(top, 0)
+    for top in sorted(roots_of(nodes, links), key=key):
+        walk(top, 0, "")
 
 
 def cmd_format(args, graph_dir, out):
@@ -280,18 +378,36 @@ def cmd_lint(args, graph_dir, out):
         for end in ("from", "to"):
             if l[end] not in nodes:
                 findings.append(f"unknown node {l[end]} in {l['type']} link {l['from']} -> {l['to']}")
-    parents = parents_of(known)
-    for l in sorted((l for l in known if l["type"] == "parent"), key=sort_key):
-        for other in parents[l["from"]]:
-            if other != l["to"] and l["to"] in ancestors(other, parents):
+    whys, hows = whys_of(known), hows_of(known)
+    for l in sorted((l for l in known if l["type"] == "how"), key=sort_key):
+        for other in whys[l["to"]]:
+            if other != l["from"] and l["from"] in ancestors(other, whys):
                 findings.append(
-                    f"redundant parent link: {label(l['from'], nodes)} -> {label(l['to'], nodes)} "
+                    f"redundant how link: {label(l['from'], nodes)} -> {label(l['to'], nodes)} "
                     f"(already implied via {label(other, nodes)})"
                 )
                 break
+    reached, stack = set(), roots_of(nodes, known)
+    while stack:
+        cur = stack.pop()
+        if cur not in reached:
+            reached.add(cur)
+            stack.extend(hows.get(cur, []))
     for i in sorted(nodes, key=title_key(nodes)):
-        if nodes[i]["type"] != "root" and not parents.get(i):
-            findings.append(f"node without a parent: {label(i, nodes)}")
+        if nodes[i]["type"] not in ("constraint", None) and i not in reached:
+            findings.append(f"unreachable from the root function: {label(i, nodes)}")
+    for i in sorted(nodes, key=title_key(nodes)):
+        kinds = {nodes[t]["type"] for t in hows.get(i, [])}
+        if nodes[i]["type"] == "function" and "function" in kinds and "solution" in kinds:
+            findings.append(f"function with both function and solution children: {label(i, nodes)}")
+    for i in sorted(nodes, key=title_key(nodes)):
+        ranks = [isinstance(l.get("order"), int) for l in known if l["type"] == "how" and l["from"] == i]
+        if any(ranks) and not all(ranks):
+            findings.append(f"partly ordered children (some how links have an order, some not): {label(i, nodes)}")
+    constrainers = {l["from"] for l in known if l["type"] == "constrains"}
+    for i in sorted(nodes, key=title_key(nodes)):
+        if nodes[i]["type"] == "constraint" and i not in constrainers:
+            findings.append(f"constraint without a constrains link: {label(i, nodes)}")
     pairs = {(l["from"], l["to"]) for l in known if l["type"] == "requires"}
     for l in sorted((l for l in known if l["type"] == "excludes"), key=sort_key):
         if (l["from"], l["to"]) in pairs or (l["to"], l["from"]) in pairs:
@@ -317,24 +433,30 @@ def build_parser():
 
     s = sub.add_parser("new", help="create a node and print its id")
     s.add_argument("title")
-    s.add_argument("--type", choices=NODE_TYPES, default="option")
-    s.add_argument("--parent", action="append", metavar="ID", help="parent node (repeatable)")
+    s.add_argument("--type", choices=NODE_TYPES, required=True)
+    s.add_argument("--why", action="append", metavar="ID", help="node this one is a how of (repeatable; not for constraints)")
+    s.add_argument("--constrains", action="append", metavar="ID", help="function a constraint limits (repeatable; constraints only)")
     s.add_argument("--source", action="append", help="node source (repeatable, default: user)")
     s.add_argument("--confidence", choices=CONFIDENCES)
-    s.add_argument("--slot")
-    s.add_argument("--src", default="user", help="provenance recorded on the parent links")
+    s.add_argument("--src", default="user", help="provenance recorded on the new links")
     s.set_defaults(run=cmd_new)
 
     s = sub.add_parser("link", help="add links from a node")
     s.add_argument("node")
     add_link_options(s)
     s.add_argument("--src", default="user", help="provenance recorded on the links (default: user)")
+    s.add_argument("--order", type=int, metavar="N", help="position of a new --how link among its parent's children")
     s.set_defaults(run=cmd_link)
 
     s = sub.add_parser("unlink", help="remove links from a node")
     s.add_argument("node")
     add_link_options(s)
     s.set_defaults(run=cmd_unlink)
+
+    s = sub.add_parser("order", help="set the order of a node's how children")
+    s.add_argument("parent")
+    s.add_argument("children", nargs="+", metavar="child", help="how children, first to last; unlisted children lose their order")
+    s.set_defaults(run=cmd_order)
 
     sub.add_parser("tree", help="print the hierarchy").set_defaults(run=cmd_tree)
     sub.add_parser("format", help="rewrite links.jsonl in canonical form, refreshing hints").set_defaults(run=cmd_format)

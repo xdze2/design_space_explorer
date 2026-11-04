@@ -1,7 +1,8 @@
 import { buildHash } from '../hash.js';
-import { analyze, undecided, toggle } from '../select.js';
+import { analyze, decisions, undecided, toggle } from '../select.js';
 import { outlineRows, crossLinks } from '../outline.js';
 import { el, svg } from '../dom.js';
+import { typeIcon, legend } from '../icons.js';
 
 const ROW = 30; // px, every row has the same height so link ends are plain arithmetic
 const LINKS = 56; // px, width of the link lane
@@ -33,30 +34,33 @@ function tagsOf(graph, state, pick, id) {
 
 // Left panel: the whole graph as an indented outline, one fixed-height line per node. Right of the names, three aligned
 // lanes: state tags, links (one SVG over all rows) and the (?) button.
-// An option's name toggles it; any other node's name opens it.
+// A solution's name toggles it; any other node's name opens it.
 export function render(graph, { pick, view }) {
   const state = selectionState(graph, pick);
   const rows = outlineRows(graph);
+  const decisionIds = new Set(decisions(graph).map((d) => d.id));
+  const firstConstraint = rows.findIndex((r) => graph.byId.get(r.id).type === 'constraint');
   const rowOf = new Map();
   rows.forEach((r, i) => { if (!rowOf.has(r.id)) rowOf.set(r.id, i); });
 
-  const items = rows.map(({ id, depth, repeat }) => {
+  const items = rows.map(({ id, depth, repeat }, index) => {
     const node = graph.byId.get(id);
     const chosen = pick.includes(id);
     const by = state.excluded.get(id);
-    const blocked = node.type === 'option' && by && !chosen;
-    const toggles = node.type === 'option' && !blocked;
-    const classes = ['gn', node.type, id === view ? 'view' : '', chosen ? 'chosen' : '', blocked ? 'excluded' : '',
+    const blocked = node.type === 'solution' && by && !chosen;
+    const toggles = node.type === 'solution' && !blocked;
+    const classes = ['gn', node.type, id === graph.rootId ? 'root' : '', decisionIds.has(id) ? 'decision' : '',
+      index === firstConstraint ? 'first-constraint' : '', id === view ? 'view' : '', chosen ? 'chosen' : '', blocked ? 'excluded' : '',
       state.open.has(id) ? 'undecided' : '', state.inConflict.has(id) ? 'conflict' : '',
       state.missing.has(id) || [...state.missing.values()].some((r) => r.includes(id)) ? 'needed' : '',
       repeat ? 'repeat' : ''].filter(Boolean).join(' ');
     const label = blocked ? `Excluded by ${title(graph, by)}`
-      : toggles ? (chosen ? 'Remove from selection' : 'Select this option') : `Open ${node.title}`;
+      : toggles ? (chosen ? 'Remove from selection' : 'Select this solution') : `Open ${node.title}`;
     const href = toggles ? buildHash({ pick: toggle(graph, pick, id), view }) : buildHash({ pick, view: id });
     const name = blocked ? el('span', { class: 'name', title: label }, node.title) : el('a', { class: 'name', href, title: label }, node.title);
     const tags = tagsOf(graph, state, pick, id).map(([kind, text]) => el('span', { class: `tag ${kind}`, title: text }, text));
     return el('li', { class: classes, 'data-id': id, style: `--depth: ${depth}` },
-      el('span', { class: 'dot' }), name, repeat ? el('small', { class: 'repeat-label' }, 'repeat') : null,
+      typeIcon(node.type), name, repeat ? el('small', { class: 'repeat-label' }, 'repeat') : null,
       el('span', { class: 'tags' }, ...tags),
       el('span', { class: 'lane' }),
       el('a', { class: 'help', href: buildHash({ pick, view: id }), title: `About ${node.title}`, 'aria-label': `About ${node.title}` }, '?'));
@@ -88,5 +92,5 @@ export function render(graph, { pick, view }) {
   list.addEventListener('mouseleave', () => {
     for (const p of lane.querySelectorAll('.cross.hover')) p.classList.remove('hover');
   });
-  return list;
+  return el('div', { class: 'graph' }, legend(), list);
 }
