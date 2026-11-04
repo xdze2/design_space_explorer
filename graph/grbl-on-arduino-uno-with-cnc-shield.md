@@ -4,6 +4,8 @@ title: GRBL on Arduino Uno with CNC shield
 type: solution
 sources: ["LLM:claude-sonnet", "raw/DIY A3 pen plotter - Claude.md", "LLM:claude-opus-5-5", "https://howtomechatronics.com/projects/diy-pen-plotter-with-automatic-tool-changer-cnc-drawing-machine/"]
 confidence: low
+summary: "An Uno clone with a CNC shield running GRBL: the cheapest and best-documented route"
+abbr: GRBL
 ---
 **Why choose it.** The cheapest and most widely documented route: an Uno clone with a CNC shield and plug-in stepper drivers, taking standard G-code, with common senders working out of the box. Better drivers for quieter operation are a small step up. CoreXY (and so H-bot) is a compile option. The shield's third driver slot runs a Z-axis stepper lift, and GRBL-Plotter adds tool changes.
 

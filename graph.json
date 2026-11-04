@@ -7,9 +7,11 @@
       "type": "solution",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "A motor on each side of the beam squares it electronically, at the cost of an extra motor and driver",
       "body": "**Why choose it.** Each side of the beam gets its own motor, so the beam cannot skew from one-sided driving and no cross rod is needed. Firmware that supports ganged axes can even square the beam against the endstops at homing.\n\n**Tradeoffs.** Extra motor, driver and wiring, and both sides must be tuned identically: any mismatch skews the beam. A mechanical cross rod is simpler if the electronics are tight.",
       "why": [
         "48664224"
@@ -21,6 +23,12 @@
       "excludes": [],
       "compatible_with": [
         "5249fcf9"
+      ],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        }
       ]
     },
     {
@@ -33,7 +41,8 @@
         "https://github.com/IljaRukin/scara_plotter"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The cheapest motor of all, and it needs no driver: a pulse width sets an angle. Two of them drive a five-bar arm directly, as in the PlotClock.\n\n**Tradeoffs.** Coarse resolution, a deadband and gear backlash: lines wobble, a chessboard pattern shows the error, and each servo needs calibrating at several angles. It turns through less than one revolution, and continuous-rotation servos give up position control.\n\n**Links.** It excludes the GT2 belt drive and the leadscrew: both need the motor to turn many revolutions over the length of an axis, which a positional servo cannot do. So on any layout that brings a transmission it is a conflict; it only fits an arm.",
+      "summary": "A hobby servo sets an angle from a pulse width: the cheapest motor, but coarse and limited to under one turn",
+      "body": "**Why choose it.** The cheapest motor of all, and it needs no driver: a pulse width sets an angle. Two of them drive a five-bar arm directly, as in the PlotClock.\n\n**Tradeoffs.** Coarse resolution, a deadband and gear backlash: lines wobble, a chessboard pattern shows the error, and each servo needs calibrating at several angles. It turns through less than one revolution, and continuous-rotation servos give up position control. Its deadband and backlash also mean it does not return to exactly the same point.\n\n**Links.** It excludes the GT2 belt drive and the leadscrew: both need the motor to turn many revolutions over the length of an axis, which a positional servo cannot do. So on any layout that brings a transmission it is a conflict; it only fits an arm.",
       "why": [
         "7279c5e2"
       ],
@@ -45,7 +54,17 @@
         "5f53f3a8",
         "9b55d6fc"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": -2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "09d91f08",
@@ -75,7 +94,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "0e78dd37",
@@ -99,7 +119,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "1203960b",
@@ -107,10 +128,12 @@
       "type": "solution",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** A rigid rod links the two side belts of the Y axis so that one motor drives both sides in lockstep. It is the cheapest cure for racking: one motor, one driver, nothing to synchronize electronically.\n\n**Tradeoffs.** The rod adds a little rotating mass and needs to be straight and well supported. It only helps if both belts are tensioned equally, and it forces both sides to move together, so any binding on one rail is felt on the other.\n\n**Links.** It requires a belt drive (GT2 belt), since the rod works by tying the two Y belts together.",
+      "summary": "A rigid rod ties the two side belts together so one motor drives both sides in lockstep",
+      "body": "**Why choose it.** A rigid rod links the two side belts of the Y axis so that one motor drives both sides in lockstep. It is the cheapest cure for racking: one motor, one driver, nothing to synchronize electronically.\n\n**Tradeoffs.** The rod adds a little rotating mass and needs to be straight and well supported. It only helps if both belts are tensioned equally, and it forces both sides to move together, so any binding on one rail is felt on the other. The rotating mass of the rod slows acceleration slightly.\n\n**Links.** It requires a belt drive (GT2 belt), since the rod works by tying the two Y belts together.",
       "why": [
         "48664224"
       ],
@@ -121,7 +144,17 @@
         "9b55d6fc"
       ],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        },
+        {
+          "id": "d0784b3e",
+          "score": -1
+        }
+      ]
     },
     {
       "id": "18882c3f",
@@ -144,7 +177,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "19109b12",
@@ -156,6 +190,8 @@
         "https://www.bitsavers.org/pdf/hp/plotter/7475A/07475-90000_7475A_Service_Manual_198708.pdf"
       ],
       "confidence": "low",
+      "summary": "Grit rollers move the paper on one axis and the pen carriage on the other, as in an office plotter",
+      "abbr": "GRIT",
       "body": "**Why choose it.** The office plotter layout (HP 7470): grit-covered rollers with pinch wheels move the paper along one axis, and the pen carriage moves along a rail on the other. Compact, the machine is no wider than the paper, and the sheet length is nearly unlimited (rolls).\n\n**Tradeoffs.** Only thin, flexible media that can be pinched and rolled: no thick card, wood or bound notebook. Registration depends on grip, so any slip shows in the drawing. The rollers hold the sheet, so it brings the drive and the guide of the carriage, but no other way to hold the surface.",
       "why": [
         "854ac5e5"
@@ -168,7 +204,18 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": 1
+        },
+        {
+          "id": "f5828b1c",
+          "score": -2
+        }
+      ],
+      "img": true
     },
     {
       "id": "1dbdf725",
@@ -180,7 +227,9 @@
         "https://www.bitsavers.org/pdf/hp/plotter/7475A/07475-90000_7475A_Service_Manual_198708.pdf"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The drive of the classic office plotters (HP 7470 and 7475A): a DC motor with a quadrature encoder in a servo loop. Fast, smooth and quiet, and it knows where it is, so a disturbance is corrected instead of shifting the rest of the drawing.\n\n**Tradeoffs.** Each axis needs a closed-loop controller and tuning. Hobby plotter firmware outputs step and direction pulses for steppers, so it needs a servo driver that accepts step and direction and closes the loop itself, which costs more than the motor.",
+      "summary": "A DC motor with a quadrature encoder in a servo loop: fast, quiet and self-correcting, but costly",
+      "abbr": "DC",
+      "body": "**Why choose it.** The drive of the classic office plotters (HP 7470 and 7475A): a DC motor with a quadrature encoder in a servo loop. Fast, smooth and quiet, and it knows where it is, so a disturbance is corrected instead of shifting the rest of the drawing.\n\n**Tradeoffs.** Each axis needs a closed-loop controller and tuning. Hobby plotter firmware outputs step and direction pulses for steppers, so it needs a servo driver that accepts step and direction and closes the loop itself, which costs more than the motor. The motor plus a servo driver is the most expensive drive of the four.",
       "why": [
         "7279c5e2"
       ],
@@ -189,7 +238,21 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": 2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -2
+        },
+        {
+          "id": "d0784b3e",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "1f4df7b0",
@@ -202,7 +265,9 @@
         "https://hackaday.com/2016/02/29/design-analysis-core-xy-vs-h-bot/"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Both motors are fixed at the rear corners, so the moving mass is minimal and acceleration can be very high. Two belts on two planes cancel the twisting moment that an H-bot puts on the beam, so racking is low. The kinematics are X = (A+B)/2 and Y = (A-B)/2, supported by common firmware either as a build option or through configuration.\n\n**Tradeoffs.** It brings the drive, the transmission, the guides and a way to hold the surface; the beam ends ride on two parallel guides, so the guide must be well matched. It needs many idlers and a long belt run, with equal tension and equal path length on both belts, or drawings skew and circles turn into ovals. A square, rigid frame is not optional. It costs more than a plain Cartesian layout or an H-bot.\n\n**Links.** It requires a belt drive (GT2 belt): the two-belt kinematics are defined by the belt path and cannot be built with a screw. It excludes the leadscrew for the same reason.",
+      "summary": "Two fixed rear motors and two crossed belts move a light beam: very high acceleration, low racking",
+      "abbr": "COXY",
+      "body": "**Why choose it.** Both motors are fixed at the rear corners, so the moving mass is minimal and acceleration can be very high. Two belts on two planes cancel the twisting moment that an H-bot puts on the beam, so racking is low. The kinematics are X = (A+B)/2 and Y = (A-B)/2, supported by common firmware either as a build option or through configuration.\n\n**Tradeoffs.** It brings the drive, the transmission, the guides and a way to hold the surface; the beam ends ride on two parallel guides, so the guide must be well matched. It needs many idlers and a long belt run, with equal tension and equal path length on both belts, or drawings skew and circles turn into ovals. A square, rigid frame is not optional. It costs more than a plain Cartesian layout or an H-bot. Both ends of the beam are supported, so it holds up well on large sheets.\n\n**Links.** It requires a belt drive (GT2 belt): the two-belt kinematics are defined by the belt path and cannot be built with a screw. It excludes the leadscrew for the same reason.",
       "why": [
         "854ac5e5"
       ],
@@ -220,7 +285,22 @@
       "excludes": [
         "5f53f3a8"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": 1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        },
+        {
+          "id": "d0784b3e",
+          "score": 2
+        }
+      ],
+      "img": true
     },
     {
       "id": "20449e2e",
@@ -251,7 +331,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "2798fd6f",
@@ -282,7 +363,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "2cc55003",
@@ -303,7 +385,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "2e099434",
@@ -316,7 +399,9 @@
         "https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The easiest layout to build and tune: one motor rides on the moving X carriage, one fixed motor drives Y, with a rail on each side of the bed. It is the layout of most hobby reference builds and is well documented.\n\n**Tradeoffs.** Moving mass is higher because a motor rides on the gantry. The two rails must be parallel and equally preloaded over their whole length, and a Y axis driven from one side wants to rack. Besides the drive, the transmission, the guides (the two rails are the guides of the Y axis) and a way to hold the surface, it therefore brings a sub-function of its own: keeping the gantry square.",
+      "summary": "The classic gantry: a motor rides on the X carriage and a rail runs along each side of the bed",
+      "abbr": "CART",
+      "body": "**Why choose it.** The easiest layout to build and tune: one motor rides on the moving X carriage, one fixed motor drives Y, with a rail on each side of the bed. It is the layout of most hobby reference builds and is well documented.\n\n**Tradeoffs.** Moving mass is higher because a motor rides on the gantry. The two rails must be parallel and equally preloaded over their whole length, and a Y axis driven from one side wants to rack. Besides the drive, the transmission, the guides (the two rails are the guides of the Y axis) and a way to hold the surface, it therefore brings a sub-function of its own: keeping the gantry square. It costs less than CoreXY, but the motor riding on the gantry makes it accelerate more slowly.",
       "why": [
         "854ac5e5"
       ],
@@ -331,7 +416,18 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        },
+        {
+          "id": "d0784b3e",
+          "score": -1
+        }
+      ],
+      "img": true
     },
     {
       "id": "328cfb43",
@@ -343,7 +439,8 @@
         "https://kylepls.com/plot"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Both motors are fixed, as in CoreXY, but a single belt runs in an H with no crossing and no stacked planes: simpler to route and hard to get wrong. Common on AxiDraw-style clones and fast hobby plotters. The motor mixing is the same as CoreXY, so firmware's CoreXY option drives it.\n\n**Tradeoffs.** The belt pulls the moving beam off-centre, which twists it at every move (racking), so the beam and its guides must be stiff. A long single belt stretches more. It brings the drive, the transmission, the guides and a way to hold the surface.\n\n**Links.** It requires the GT2 belt drive and excludes the leadscrew: the kinematics are made by a belt loop.",
+      "summary": "Two fixed motors and a single H-shaped belt: simple to route, but the beam twists at every move",
+      "body": "**Why choose it.** Both motors are fixed, as in CoreXY, but a single belt runs in an H with no crossing and no stacked planes: simpler to route and hard to get wrong. Common on AxiDraw-style clones and fast hobby plotters. The motor mixing is the same as CoreXY, so firmware's CoreXY option drives it.\n\n**Tradeoffs.** The belt pulls the moving beam off-centre, which twists it at every move (racking), so the beam and its guides must be stiff. A long single belt stretches more. It brings the drive, the transmission, the guides and a way to hold the surface. It costs less than CoreXY (one belt, fewer idlers) and, with both motors fixed, accelerates almost as well. On a large sheet the long single belt is the weak point.\n\n**Links.** It requires the GT2 belt drive and excludes the leadscrew: the kinematics are made by a belt loop.",
       "why": [
         "854ac5e5"
       ],
@@ -361,7 +458,22 @@
       "excludes": [
         "5f53f3a8"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": -1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        },
+        {
+          "id": "d0784b3e",
+          "score": 1
+        }
+      ],
+      "img": true
     },
     {
       "id": "378780c6",
@@ -373,6 +485,7 @@
         "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "A printed pen holder with a spring and a hard stop that set the pressure and the lowered position",
       "body": "A printed holder with a spring and a hard stop. The spring sets the pen pressure, the stop sets the repeatable lowered position, and a compliant tip absorbs paper that is not perfectly flat. Printable at home or through a service.",
       "why": [
         "d1dbee31"
@@ -382,7 +495,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "37a033a3",
@@ -394,6 +508,8 @@
         "https://www.instructables.com/DIY-Multicolor-Pen-Plotter/"
       ],
       "confidence": "low",
+      "summary": "A tiny, very cheap geared stepper: slow, with backlash that adds up over long moves",
+      "abbr": "28BY",
       "body": "**Why choose it.** Very cheap and tiny, with a gearbox that gives usable torque and fine resolution (about 2000 steps per output revolution). Common on budget builds, including a CoreXY plotter and a multi-pen changer.\n\n**Tradeoffs.** Slow: about 15 rpm, and a GRBL build tops out near 5 mm/s. Plastic gears add backlash, and the real gear ratio is not the nominal one, so error accumulates over long moves. It is unipolar: CNC-shield drivers need a trace cut to run it bipolar. Overdriving it at 12 V gains torque and heat.",
       "why": [
         "7279c5e2"
@@ -403,7 +519,21 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": -1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        },
+        {
+          "id": "d0784b3e",
+          "score": -2
+        }
+      ]
     },
     {
       "id": "3bd9d7e2",
@@ -411,10 +541,13 @@
       "type": "solution",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The cheapest guide and the easiest to source: wheels ride in the groove of the extrusion that is also the frame, with eccentric nuts to adjust the preload.\n\n**Tradeoffs.** It needs careful adjustment to remove play without binding, and it is less stiff than rails. Wheels wear and flat-spot over time, but for a pen load they last.",
+      "summary": "Wheels run in the groove of the extrusion that is also the frame: the cheapest guide, less stiff than rails",
+      "abbr": "VSLT",
+      "body": "**Why choose it.** The cheapest guide and the easiest to source: wheels ride in the groove of the extrusion that is also the frame, with eccentric nuts to adjust the preload.\n\n**Tradeoffs.** It needs careful adjustment to remove play without binding, and it is less stiff than rails. Wheels wear and flat-spot over time, but for a pen load they last. Residual play and flex show up as wobble in the lines.",
       "why": [
         "b6e812c9"
       ],
@@ -423,7 +556,17 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "46e36bf8",
+          "score": -1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "3c12da47",
@@ -431,10 +574,12 @@
       "type": "solution",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Low play and low friction out of the box, and much stiffer, which raises the resonance and allows more acceleration. Two spaced bearing blocks also make a good wide carriage for a cantilever.\n\n**Tradeoffs.** More expensive and heavier, and the rails need a flat, accurate mounting surface; mounted on bent extrusion they bind. Most of the gain shows only if the rest of the machine is equally rigid.",
+      "summary": "Steel rails with bearing blocks: low play, low friction and stiff, but dearer and heavier",
+      "body": "**Why choose it.** Low play and low friction out of the box, and much stiffer, which raises the resonance and allows more acceleration. Two spaced bearing blocks also make a good wide carriage for a cantilever.\n\n**Tradeoffs.** More expensive and heavier, and the rails need a flat, accurate mounting surface; mounted on bent extrusion they bind. Most of the gain shows only if the rest of the machine is equally rigid. The low play also gives straighter lines and better repeatability.",
       "why": [
         "b6e812c9"
       ],
@@ -443,7 +588,21 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": 1
+        },
+        {
+          "id": "46e36bf8",
+          "score": 2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        }
+      ]
     },
     {
       "id": "46e36bf8",
@@ -463,7 +622,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "48664224",
@@ -486,7 +646,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "5249fcf9",
@@ -494,9 +655,12 @@
       "type": "solution",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "An ESP32 running FluidNC: wireless upload, text-file configuration and native servo support",
+      "abbr": "FNC",
       "body": "**Why choose it.** Wireless upload, configuration through a text file (including CoreXY kinematics and a second motor ganged on one axis) and native servo support. It takes standard G-code.\n\n**Tradeoffs.** More configuration than GRBL on an Uno, and the ESP32 board and its driver shield cost more.",
       "why": [
         "a2651c78"
@@ -506,7 +670,13 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        }
+      ]
     },
     {
       "id": "55269563",
@@ -534,7 +704,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "55687554",
@@ -542,9 +713,11 @@
       "type": "component",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "Toothed pulleys on the motors and idlers along the belt path; more idlers mean more friction",
       "body": "Toothed pulleys on the motors and smooth or toothed idlers along the belt path. The number of idlers grows quickly with the layout (few for Cartesian, many for CoreXY), and each one adds friction and a place for the belt to wander, so keep paths straight.",
       "why": [
         "9b55d6fc"
@@ -554,7 +727,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "55904a34",
@@ -568,7 +742,9 @@
         "https://lauda.ulapland.fi/bitstream/handle/10024/65132/Bircher_Martin.pdf"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Very fast up and down with a plain on/off signal, and no moving linkage. Good for dotted or stippled drawings where the pen lifts constantly.\n\n**Tradeoffs.** No control over travel: it is either up or down, and it slams, so the pressure comes from a spring or a weight it releases. It draws real current and needs a driver stage with a flyback diode, and it adds weight to the carriage.\n\n**Links.** It excludes GRBL on an Arduino Uno shield: that board has no spare switched output for it, because the free pins are taken by the spindle and coolant functions of the firmware, and the on/off semantics would need the firmware to be changed.",
+      "summary": "An on/off solenoid lifts the pen very fast, but with no control over travel or pressure",
+      "abbr": "SOL",
+      "body": "**Why choose it.** Very fast up and down with a plain on/off signal, and no moving linkage. Good for dotted or stippled drawings where the pen lifts constantly.\n\n**Tradeoffs.** No control over travel: it is either up or down, and it slams, so the pressure comes from a spring or a weight it releases. It draws real current and needs a driver stage with a flyback diode, and it adds weight to the carriage. With only two positions it suits pens and markers, not brushes.\n\n**Links.** It excludes GRBL on an Arduino Uno shield: that board has no spare switched output for it, because the free pins are taken by the spindle and coolant functions of the firmware, and the on/off semantics would need the firmware to be changed.",
       "why": [
         "2798fd6f"
       ],
@@ -581,7 +757,17 @@
       "excludes": [
         "c7102c51"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "0e78dd37",
+          "score": -1
+        },
+        {
+          "id": "d0784b3e",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "565c46d1",
@@ -594,7 +780,8 @@
         "https://www.bitsavers.org/pdf/hp/plotter/7475A/07475-90000_7475A_Service_Manual_198708.pdf"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Pens wait in docks at fixed machine positions; the carriage drives to a dock and a gripper picks or drops a pen (GRBL-Plotter T commands, or the HP 7475A's six-pen carousel). Unattended multi-colour plots, with many pens (eight on one DIY build).\n\n**Tradeoffs.** Extra mechanism, a dock area outside the drawing and a calibration per dock. Pens dry unless the docks cap them.\n\n**Links.** It requires the Z-axis stepper lift: pulling a pen out of a dock needs more vertical travel and force than the short stroke of a servo lift.",
+      "summary": "Pens wait in docks and a gripper picks and drops them: unattended multi-colour plots, at the price of a mechanism",
+      "body": "**Why choose it.** Pens wait in docks at fixed machine positions; the carriage drives to a dock and a gripper picks or drops a pen (GRBL-Plotter T commands, or the HP 7475A's six-pen carousel). Unattended multi-colour plots, with many pens (eight on one DIY build).\n\n**Tradeoffs.** Extra mechanism, a dock area outside the drawing and a calibration per dock. Pens dry unless the docks cap them. The docks and the gripper are an extra mechanism that costs the most of the three options, but each dock is calibrated, so a pen lands in the same place on every swap.\n\n**Links.** It requires the Z-axis stepper lift: pulling a pen out of a dock needs more vertical travel and force than the short stroke of a servo lift.",
       "why": [
         "f42dc3f6"
       ],
@@ -605,7 +792,17 @@
         "c9ca31d8"
       ],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": 1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -2
+        }
+      ]
     },
     {
       "id": "5cd4d3d5",
@@ -615,7 +812,8 @@
         "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Two or more pens side by side on the head, each with its own lift, and the firmware applies an offset per pen. No pick and place and fast changes.\n\n**Tradeoffs.** More moving mass (one lift per pen), few colours, a drawing area reduced by the offsets, and an offset per pen to calibrate. Idle pens are uncapped and dry.",
+      "summary": "Two or more pens side by side on the head, each with its own lift and a firmware offset",
+      "body": "**Why choose it.** Two or more pens side by side on the head, each with its own lift, and the firmware applies an offset per pen. No pick and place and fast changes.\n\n**Tradeoffs.** More moving mass (one lift per pen), few colours, a drawing area reduced by the offsets, and an offset per pen to calibrate. Idle pens are uncapped and dry. The offsets are calibrated once and no pen is reseated, so repeatability holds, but every extra lift adds parts and cost.",
       "why": [
         "f42dc3f6"
       ],
@@ -624,7 +822,17 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": 1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        }
+      ]
     },
     {
       "id": "5f53f3a8",
@@ -636,7 +844,9 @@
         "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** Precise, no stretch, self-holding when the motor is off and compact.\n\n**Tradeoffs.** Slow, with more friction and wobble on long travel, and heavy on a moving gantry. It is a poor fit for the speeds a drawing machine wants, and it trades speed for accuracy that the pen interface often cannot use anyway.\n\n**Links.** It excludes the single-rail cantilever: a screw along the X beam adds mass and wobble at the end of the overhang, which is exactly where the cantilever is weakest. CoreXY, the H-bot and the polargraph, which are defined by their belts, and hobby servos, which cannot turn it far enough, exclude it too (declared on them).",
+      "summary": "A threaded screw turns the motor into precise, self-holding linear travel, but slowly",
+      "abbr": "LS",
+      "body": "**Why choose it.** Precise, no stretch, self-holding when the motor is off and compact.\n\n**Tradeoffs.** Slow, with more friction and wobble on long travel, and heavy on a moving gantry. It is a poor fit for the speeds a drawing machine wants, and it trades speed for accuracy that the pen interface often cannot use anyway. The longer the travel, the worse it gets, so a large sheet makes it slower and whippier.\n\n**Links.** It excludes the single-rail cantilever: a screw along the X beam adds mass and wobble at the end of the overhang, which is exactly where the cantilever is weakest. CoreXY, the H-bot and the polargraph, which are defined by their belts, and hobby servos, which cannot turn it far enough, exclude it too (declared on them).",
       "why": [
         "6d52ba8e"
       ],
@@ -651,7 +861,17 @@
         "a316aecc",
         "bb0b672f"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": -1
+        },
+        {
+          "id": "d0784b3e",
+          "score": -2
+        }
+      ]
     },
     {
       "id": "65317df5",
@@ -662,6 +882,7 @@
         "https://lauda.ulapland.fi/bitstream/handle/10024/65132/Bircher_Martin.pdf"
       ],
       "confidence": "low",
+      "summary": "A rigid pen holder whose pressure is set by how far the lift pushes it down: exact, but needs a flat surface",
       "body": "**Why choose it.** The pen is clamped rigidly and the lift moves it to a set height, so the pressure is set by how far it is pushed down. Exact control of a brush's contact width and of how a pencil bites.\n\n**Tradeoffs.** Every bump or change of thickness in the media changes the pressure, so it needs a flat, levelled surface.\n\n**Links.** It requires the Z-axis stepper lift: only a lift with position control over a range can set a depth. A solenoid has two positions, and a servo's angle is too coarse.",
       "why": [
         "09d91f08"
@@ -673,7 +894,17 @@
         "c9ca31d8"
       ],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "0e78dd37",
+          "score": 2
+        },
+        {
+          "id": "f5828b1c",
+          "score": -2
+        }
+      ]
     },
     {
       "id": "6d52ba8e",
@@ -700,7 +931,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "7279c5e2",
@@ -735,7 +967,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "749d3565",
@@ -747,6 +980,8 @@
         "https://cdn.evilmadscientist.com/wiki/axidraw/software/AxiDraw_V37r1.pdf"
       ],
       "confidence": "low",
+      "summary": "The gantry hangs on a wall or an easel: large formats without floor space, but gravity loads one axis",
+      "abbr": "FW",
       "body": "**Why choose it.** The gantry hangs on a wall or an easel, like the iDraw H A1: large formats without the floor space, and the drawing can be watched as it grows.\n\n**Tradeoffs.** Gravity pulls the carriage along the vertical axis, so that motor holds the weight even at rest and loses position if power drops.\n\n**Links.** It excludes the pen weight on a free slide: on a vertical surface the pen no longer falls onto it.",
       "why": [
         "20449e2e"
@@ -758,7 +993,13 @@
       "excludes": [
         "f01d277b"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "7c43b5d5",
@@ -768,6 +1009,7 @@
         "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "A flat board under the gantry holds the sheet with clips, tape or magnets at a known height",
       "body": "**Why choose it.** A flat board (MDF, plywood, glass) under the gantry, with the sheet held by clips, tape or magnets on a steel sheet. The sheet stays at a known height and position, so pen travel and alignment are set once.\n\n**Tradeoffs.** The media is limited to the bed size and to the clear height under the pen, so thick or rigid supports need more pen travel. An uneven board shows as varying pressure.",
       "why": [
         "20449e2e"
@@ -777,7 +1019,13 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "f5828b1c",
+          "score": -1
+        }
+      ]
     },
     {
       "id": "7e4b293b",
@@ -785,9 +1033,11 @@
       "type": "component",
       "sources": [
         "LLM:claude-sonnet",
-        "raw/DIY A3 pen plotter - Claude.md"
+        "raw/DIY A3 pen plotter - Claude.md",
+        "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "A reinforced-core belt of a few metres: the cheapest accuracy upgrade on a belt machine",
       "body": "Reinforced-core belt of a few metres in total. Core material and width set the stretch: a wider, reinforced belt costs little and is the cheapest accuracy upgrade on a belt machine.",
       "why": [
         "9b55d6fc"
@@ -797,7 +1047,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "854ac5e5",
@@ -832,7 +1083,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "9b55d6fc",
@@ -844,6 +1096,8 @@
         "LLM:claude-opus-5-5"
       ],
       "confidence": "low",
+      "summary": "A toothed belt over pulleys and idlers: cheap, light and fast, with limited accuracy from belt stretch",
+      "abbr": "GT2",
       "body": "**Why choose it.** Cheap, light and fast. With common pulleys and fine microstepping it gives plenty of resolution for drawing, and it suits every belt-based layout; CoreXY and the H-bot require it.\n\n**Tradeoffs.** Belt stretch and tooth engagement limit real accuracy well below the theoretical resolution. Use a reinforced-core belt, wrap enough teeth around each pulley and keep belts tight and straight. A positional hobby servo cannot drive it (declared on the servo).",
       "why": [
         "6d52ba8e"
@@ -858,7 +1112,17 @@
       "excludes": [
         "0800f202"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        },
+        {
+          "id": "d0784b3e",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "9b7ac8ab",
@@ -870,6 +1134,8 @@
         "https://github.com/IljaRukin/scara_plotter"
       ],
       "confidence": "low",
+      "summary": "Two base motors swing a pair of linked arms to the pen: tiny and cheap, but only a small work area",
+      "abbr": "SCAR",
       "body": "**Why choose it.** Two motors at the base swing a linked pair of arms that meet at the pen. Tiny, cheap, no rails and no frame around the sheet: the PlotClock writes the time with three 9 g servos. Good for a desk toy or small text.\n\n**Tradeoffs.** Accuracy and stiffness change across the workspace, and the area is small for the arm length. Scaling it up needs preloaded bearings and gearboxes, and few hobby firmwares support the kinematics out of the box. The motors drive the arms directly, so it brings only the drive and a way to hold the surface.",
       "why": [
         "854ac5e5"
@@ -882,7 +1148,18 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": -2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        }
+      ],
+      "img": true
     },
     {
       "id": "9dbd19bc",
@@ -902,7 +1179,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "a09bf72f",
@@ -914,6 +1192,7 @@
         "https://lostpixels.io/writings/the-difference-between-plotted-and-printed-artwork"
       ],
       "confidence": "low",
+      "summary": "The plot pauses and someone swaps the pen by hand, then resumes: no extra parts",
       "body": "**Why choose it.** The plot pauses, someone swaps the pen and resumes. Every controller can do it, and multi-colour EasyDraw drawings are made this way. No extra parts.\n\n**Tradeoffs.** Someone must be there for each colour. Registration depends on the holder seating every pen at the same place and height; removing a pen can nudge the carriage.",
       "why": [
         "f42dc3f6"
@@ -923,7 +1202,17 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": -1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "a2651c78",
@@ -949,7 +1238,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "a316aecc",
@@ -962,7 +1252,8 @@
         "https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** One Y rail along one side carries a cantilevered X beam. There is no parallelism to get right, no racking, a single belt and motor, less extrusion and moving mass, and one side stays open for loading paper or odd-shaped media. Many commercial pen plotters work this way.\n\n**Tradeoffs.** The single Y guide takes the whole tilting moment: beam sag and twist, higher wheel loads and a lower resonance, which limits acceleration. It needs a wide carriage (four or more wheels or two bearing blocks), a stiff beam (a deeper section rather than a thin one) and a short overhang. A long overhang of thin extrusion flexes noticeably on a large sheet: the EasyDraw went from a cantilever (V3, A4 only) to a frame supported on all four sides (V4) to reach A3 and A2. It brings the drive, the transmission, the guides and a way to hold the surface.",
+      "summary": "One Y rail carries a cantilevered X beam: open on one side, but the overhang flexes on large sheets",
+      "body": "**Why choose it.** One Y rail along one side carries a cantilevered X beam. There is no parallelism to get right, no racking, a single belt and motor, less extrusion and moving mass, and one side stays open for loading paper or odd-shaped media. Many commercial pen plotters work this way.\n\n**Tradeoffs.** The single Y guide takes the whole tilting moment: beam sag and twist, higher wheel loads and a lower resonance, which limits acceleration. It needs a wide carriage (four or more wheels or two bearing blocks), a stiff beam (a deeper section rather than a thin one) and a short overhang. A long overhang of thin extrusion flexes noticeably on a large sheet: the EasyDraw went from a cantilever (V3, A4 only) to a frame supported on all four sides (V4) to reach A3 and A2. It brings the drive, the transmission, the guides and a way to hold the surface. One rail, one belt and one motor also make it cheap.",
       "why": [
         "854ac5e5"
       ],
@@ -978,7 +1269,26 @@
       "excludes": [
         "5f53f3a8"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": -2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        },
+        {
+          "id": "d0784b3e",
+          "score": -1
+        },
+        {
+          "id": "f5828b1c",
+          "score": 1
+        }
+      ],
+      "img": true
     },
     {
       "id": "b1d14f50",
@@ -990,6 +1300,7 @@
         "https://cdn.evilmadscientist.com/wiki/axidraw/software/AxiDraw_V37r1.pdf"
       ],
       "confidence": "low",
+      "summary": "The machine has no bottom and stands over the media: any support that fits under the frame, of any size",
       "body": "**Why choose it.** The machine has no bottom: it stands on the table and the sheet, notebook, card or wood panel goes underneath, as with the AxiDraw and the EasyDraw (\"any flat surface\"). Any support and thickness that fits under the frame, of any size larger than the machine.\n\n**Tradeoffs.** The media's own flatness sets the pressure. The machine can shift relative to the sheet if bumped, and aligning the drawing to the sheet is manual each time. The frame and its feet must be stiff, since nothing under the sheet ties them together.",
       "why": [
         "20449e2e"
@@ -999,7 +1310,17 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": 1
+        },
+        {
+          "id": "f5828b1c",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "b6e812c9",
@@ -1031,7 +1352,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "bb0b672f",
@@ -1044,6 +1366,8 @@
         "https://uunatek.com/blogs/tips-and-tricks/hanging-plotter-turning-vertical-creativity-into-reality-with-idraw-h-a1-pen-plotter"
       ],
       "confidence": "low",
+      "summary": "Two top motors and cords hold a hanging gondola on a wall board: cheap and huge, but slow and sloppy at the edges",
+      "abbr": "POLG",
       "body": "**Why choose it.** Two motors at the top corners of a wall board, with belts or cords down to a hanging gondola that holds the pen. The cheapest way to a large drawing area (move the motors apart and use longer belts), and it takes almost no floor space.\n\n**Tradeoffs.** The gondola swings, so it must draw slowly. Cords stretch and gravity pulls, so accuracy is worst at the edges (one build reports 1-2 mm), and the top of the board is out of reach. Straight lines must be split into short segments or they bow. The board is part of the machine, so it brings no guides and no separate way to hold the surface, only the drive and the transmission. The pen lift usually tilts the whole gondola off the wall, which limits the choice of tools. Builders call it an art machine rather than a precision plotter.\n\n**Links.** It excludes the pen weight on a free slide: on a vertical surface gravity no longer presses the pen. It excludes the leadscrew: the travel is made by belts or cords.",
       "why": [
         "854ac5e5"
@@ -1059,7 +1383,22 @@
         "5f53f3a8",
         "f01d277b"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "2cc55003",
+          "score": 1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        },
+        {
+          "id": "d0784b3e",
+          "score": -2
+        }
+      ],
+      "img": true
     },
     {
       "id": "c7102c51",
@@ -1072,6 +1411,8 @@
         "https://howtomechatronics.com/projects/diy-pen-plotter-with-automatic-tool-changer-cnc-drawing-machine/"
       ],
       "confidence": "low",
+      "summary": "An Uno clone with a CNC shield running GRBL: the cheapest and best-documented route",
+      "abbr": "GRBL",
       "body": "**Why choose it.** The cheapest and most widely documented route: an Uno clone with a CNC shield and plug-in stepper drivers, taking standard G-code, with common senders working out of the box. Better drivers for quieter operation are a small step up. CoreXY (and so H-bot) is a compile option. The shield's third driver slot runs a Z-axis stepper lift, and GRBL-Plotter adds tool changes.\n\n**Tradeoffs.** No wireless, and the pen servo needs a firmware fork with servo support. Changing settings means editing and re-flashing, rather than a configuration file.",
       "why": [
         "a2651c78"
@@ -1083,7 +1424,13 @@
       "excludes": [
         "55904a34"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "c9ca31d8",
@@ -1095,6 +1442,7 @@
         "https://howtomechatronics.com/projects/diy-pen-plotter-with-automatic-tool-changer-cnc-drawing-machine/"
       ],
       "confidence": "low",
+      "summary": "A third stepper moves the pen holder up and down by position: any height, depth control, thick media",
       "body": "**Why choose it.** A third stepper on a short screw or belt moves the pen holder up and down by position, as on the iDraw. Any lift height, a controlled push down, enough travel for thick media and for picking pens from a rack, and depth control for brushes.\n\n**Tradeoffs.** An extra motor, driver and axis to home, a heavier carriage, and a slower lift than a solenoid. The controller needs a third stepper channel.",
       "why": [
         "2798fd6f"
@@ -1108,7 +1456,21 @@
       "excludes": [
         "d4ddcf72"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "0e78dd37",
+          "score": 2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        },
+        {
+          "id": "d0784b3e",
+          "score": -1
+        }
+      ]
     },
     {
       "id": "ce557edc",
@@ -1122,6 +1484,7 @@
         "https://cdn.evilmadscientist.com/wiki/axidraw/software/AxiDraw_V37r1.pdf"
       ],
       "confidence": "low",
+      "summary": "A small SG90 or MG90S hobby servo for the pen lift; the one wear part of most plotters",
       "body": "A small hobby servo (the common blue SG90 or the metal-gear MG90S). Light enough for the carriage; metal gears survive repeated pen changes better. It is the one wear part of most servo-lift plotters: the EasyDraw ships a spare MG90S, the AxiDraw uses an SG90.",
       "why": [
         "dcefc61b"
@@ -1131,7 +1494,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "d0784b3e",
@@ -1154,7 +1518,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "d1dbee31",
@@ -1165,6 +1530,7 @@
         "https://bantamtools.com/products/brushless-upgrade-axidraw"
       ],
       "confidence": "low",
+      "summary": "A spring presses the pen and a hard stop sets the travel: works in any orientation and absorbs uneven paper",
       "body": "**Why choose it.** The pen sits in a holder pushed down by a spring. The lift lets it go, the spring sets the force on the paper and a hard stop sets the travel. Works in any orientation, and the compliance absorbs paper that is not flat. AxiDraw's brushless upgrade adds a spring for pens that need pressure.\n\n**Tradeoffs.** One force per spring: another pen may need another spring. The lift must fight the spring to raise the pen, which loads a small servo.",
       "why": [
         "09d91f08"
@@ -1176,7 +1542,17 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "0e78dd37",
+          "score": 1
+        },
+        {
+          "id": "f5828b1c",
+          "score": 2
+        }
+      ]
     },
     {
       "id": "d4ddcf72",
@@ -1188,7 +1564,9 @@
         "https://cdn.evilmadscientist.com/wiki/axidraw/software/AxiDraw_V37r1.pdf"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The EiBotBoard (EBB) is the small controller of the AxiDraw and its clones (the EasyDraw uses one): two stepper drivers and a servo output, driven over USB by the free AxiDraw extension for Inkscape. Draw in Inkscape and press Apply, with handwriting fonts, pause and resume, and no G-code step.\n\n**Tradeoffs.** Tied to that software and to the kinematics it assumes, so a clone must match the AxiDraw layout. Few settings to tune.\n\n**Links.** It excludes the Z-axis stepper lift: the board drives only two steppers and lifts the pen with its servo output.",
+      "summary": "The AxiDraw controller driven from Inkscape over USB: no G-code step, but tied to that software",
+      "abbr": "EBB",
+      "body": "**Why choose it.** The EiBotBoard (EBB) is the small controller of the AxiDraw and its clones (the EasyDraw uses one): two stepper drivers and a servo output, driven over USB by the free AxiDraw extension for Inkscape. Draw in Inkscape and press Apply, with handwriting fonts, pause and resume, and no G-code step.\n\n**Tradeoffs.** Tied to that software and to the kinematics it assumes, so a clone must match the AxiDraw layout. Few settings to tune. The EBB board costs more than an Uno clone with a shield.\n\n**Links.** It excludes the Z-axis stepper lift: the board drives only two steppers and lifts the pen with its servo output.",
       "why": [
         "a2651c78"
       ],
@@ -1201,6 +1579,12 @@
       ],
       "compatible_with": [
         "dcefc61b"
+      ],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": -1
+        }
       ]
     },
     {
@@ -1216,6 +1600,7 @@
         "https://bantamtools.com/products/brushless-upgrade-axidraw"
       ],
       "confidence": "low",
+      "summary": "A hobby servo swings an arm to raise and lower the pen: cheap and light, but a wear part",
       "body": "**Why choose it.** A hobby servo swings an arm to raise and lower the pen. Cheap, light, one signal wire. It only sets the up and down positions; how hard the pen presses is a sub-function of its own. The AxiDraw and the EasyDraw both work this way.\n\n**Tradeoffs.** It needs firmware that can drive it as a tool, and its speed limits how fast a stroke can start. It is the wear part of the machine: extra pen weight, a spring or a sticky slide wears it out early (the EasyDraw ships a spare and expects one a year for heavy use). Coreless or brushless servos lift faster and vibrate less.",
       "why": [
         "2798fd6f"
@@ -1230,6 +1615,16 @@
       "excludes": [],
       "compatible_with": [
         "5249fcf9"
+      ],
+      "fares": [
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        },
+        {
+          "id": "d0784b3e",
+          "score": -1
+        }
       ]
     },
     {
@@ -1242,7 +1637,8 @@
         "https://electricalflux.com/mcu-peripherals/28byj-48-stepper-motor-sizing-wiring"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The standard plotter and 3D-printer motor: 200 full steps per revolution, microstepped, run by step-and-direction drivers that every hobby firmware supports. Plenty of torque and speed for a pen carriage. Most kits use them, the EasyDraw V4 among them.\n\n**Tradeoffs.** Open loop: an overload or a bind skips steps silently. Heavy when one rides on the gantry. Noisy on basic drivers; quiet drivers cost a little more. Closed-loop versions with an encoder on the back keep the same step-and-direction interface for a modest premium.",
+      "summary": "The standard step-and-direction motor: 200 steps per turn, good torque and speed, open loop",
+      "body": "**Why choose it.** The standard plotter and 3D-printer motor: 200 full steps per revolution, microstepped, run by step-and-direction drivers that every hobby firmware supports. Plenty of torque and speed for a pen carriage. Most kits use them, the EasyDraw V4 among them.\n\n**Tradeoffs.** Open loop: an overload or a bind skips steps silently. Heavy when one rides on the gantry. Noisy on basic drivers; quiet drivers cost a little more. Closed-loop versions with an encoder on the back keep the same step-and-direction interface for a modest premium. After a skipped step the rest of the drawing is shifted, which spoils repeatability.",
       "why": [
         "7279c5e2"
       ],
@@ -1251,7 +1647,17 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "18882c3f",
+          "score": -1
+        },
+        {
+          "id": "d0784b3e",
+          "score": 1
+        }
+      ]
     },
     {
       "id": "f01d277b",
@@ -1263,7 +1669,8 @@
         "https://medium.com/@generativeartworks/idraw-h-a3-pen-plotter-review-2146d3624400"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** The pen and its holder ride on a low-friction vertical slide. The lift only raises it, and the weight of the pen presses on the paper, as on the AxiDraw. The simplest and gentlest option, with a constant force.\n\n**Tradeoffs.** Light pens stay up against the slide friction. Pens that need force (ballpoints, pencils) need added weight, which wears the servo, and the drop can bounce at high speed. It only works on a horizontal surface, so the wall-mounted frame and the polargraph exclude it (declared on them).",
+      "summary": "The weight of the pen on a low-friction slide presses on the paper: simple and gentle, horizontal surfaces only",
+      "body": "**Why choose it.** The pen and its holder ride on a low-friction vertical slide. The lift only raises it, and the weight of the pen presses on the paper, as on the AxiDraw. The simplest and gentlest option, with a constant force.\n\n**Tradeoffs.** Light pens stay up against the slide friction. Pens that need force (ballpoints, pencils) need added weight, which wears the servo, and the drop can bounce at high speed. It only works on a horizontal surface, so the wall-mounted frame and the polargraph exclude it (declared on them). It costs nothing extra: there is no spring or added part.",
       "why": [
         "09d91f08"
       ],
@@ -1275,7 +1682,17 @@
         "749d3565",
         "bb0b672f"
       ],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "0e78dd37",
+          "score": -1
+        },
+        {
+          "id": "9dbd19bc",
+          "score": 1
+        }
+      ]
     },
     {
       "id": "f42dc3f6",
@@ -1303,7 +1720,8 @@
       ],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "f5828b1c",
@@ -1327,7 +1745,8 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": []
     },
     {
       "id": "fba1701e",
@@ -1339,7 +1758,8 @@
         "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4567565"
       ],
       "confidence": "low",
-      "body": "**Why choose it.** A moving coil in a magnet gives a force proportional to current and nearly independent of position. The pressure can be set per pen and changed during a stroke, which varies the stroke weight with a brush or a flexible nib. Office plotters used it against a spring. It sets the pressure itself, so it brings no pressure sub-function.\n\n**Tradeoffs.** Rare in DIY builds: it needs a current driver, an analog or PWM output and firmware that maps a value to a force. Short stroke, more cost and tuning.",
+      "summary": "A moving coil gives a force proportional to current, so the pen pressure can change during a stroke",
+      "body": "**Why choose it.** A moving coil in a magnet gives a force proportional to current and nearly independent of position. The pressure can be set per pen and changed during a stroke, which varies the stroke weight with a brush or a flexible nib. Office plotters used it against a spring. It sets the pressure itself, so it brings no pressure sub-function.\n\n**Tradeoffs.** Rare in DIY builds: it needs a current driver, an analog or PWM output and firmware that maps a value to a force. Short stroke, more cost and tuning. It lifts about as fast as a solenoid.",
       "why": [
         "2798fd6f"
       ],
@@ -1348,7 +1768,21 @@
       "constrained_by": [],
       "requires": [],
       "excludes": [],
-      "compatible_with": []
+      "compatible_with": [],
+      "fares": [
+        {
+          "id": "0e78dd37",
+          "score": 2
+        },
+        {
+          "id": "9dbd19bc",
+          "score": -2
+        },
+        {
+          "id": "d0784b3e",
+          "score": 1
+        }
+      ]
     }
   ]
 }

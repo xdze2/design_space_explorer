@@ -4,6 +4,8 @@ title: Five-bar arm (SCARA)
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://hackaday.com/2014/02/13/a-clock-that-plots-time/", "https://github.com/IljaRukin/scara_plotter"]
 confidence: low
+summary: "Two base motors swing a pair of linked arms to the pen: tiny and cheap, but only a small work area"
+abbr: SCAR
 ---
 **Why choose it.** Two motors at the base swing a linked pair of arms that meet at the pen. Tiny, cheap, no rails and no frame around the sheet: the PlotClock writes the time with three 9 g servos. Good for a desk toy or small text.
 

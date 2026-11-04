@@ -4,6 +4,8 @@ title: Geared 28BYJ-48 steppers
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://electricalflux.com/mcu-peripherals/28byj-48-stepper-motor-sizing-wiring", "https://www.instructables.com/DIY-Multicolor-Pen-Plotter/"]
 confidence: low
+summary: "A tiny, very cheap geared stepper: slow, with backlash that adds up over long moves"
+abbr: 28BY
 ---
 **Why choose it.** Very cheap and tiny, with a gearbox that gives usable torque and fine resolution (about 2000 steps per output revolution). Common on budget builds, including a CoreXY plotter and a multi-pen changer.
 

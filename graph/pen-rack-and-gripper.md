@@ -4,9 +4,10 @@ title: Pen rack and gripper
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://howtomechatronics.com/projects/diy-pen-plotter-with-automatic-tool-changer-cnc-drawing-machine/", "https://www.instructables.com/DIY-Multicolor-Pen-Plotter/", "https://www.bitsavers.org/pdf/hp/plotter/7475A/07475-90000_7475A_Service_Manual_198708.pdf"]
 confidence: low
+summary: "Pens wait in docks and a gripper picks and drops them: unattended multi-colour plots, at the price of a mechanism"
 ---
 **Why choose it.** Pens wait in docks at fixed machine positions; the carriage drives to a dock and a gripper picks or drops a pen (GRBL-Plotter T commands, or the HP 7475A's six-pen carousel). Unattended multi-colour plots, with many pens (eight on one DIY build).
 
-**Tradeoffs.** Extra mechanism, a dock area outside the drawing and a calibration per dock. Pens dry unless the docks cap them.
+**Tradeoffs.** Extra mechanism, a dock area outside the drawing and a calibration per dock. Pens dry unless the docks cap them. The docks and the gripper are an extra mechanism that costs the most of the three options, but each dock is calibrated, so a pen lands in the same place on every swap.
 
 **Links.** It requires the Z-axis stepper lift: pulling a pen out of a dock needs more vertical travel and force than the short stroke of a servo lift.

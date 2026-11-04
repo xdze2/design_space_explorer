@@ -28,6 +28,76 @@
 {"from":"bb0b672f","to":"5f53f3a8","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Hanging polargraph excludes Leadscrew drive"}
 {"from":"bb0b672f","to":"f01d277b","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Hanging polargraph excludes Pen weight on a free slide"}
 {"from":"d4ddcf72","to":"c9ca31d8","type":"excludes","src":"LLM:claude-opus-5-5","hint":"EiBotBoard with the AxiDraw software excludes Z-axis stepper lift"}
+{"from":"018d772f","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Second synchronized Y motor fares Budget"}
+{"from":"0800f202","to":"18882c3f","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Hobby servos fares Repeatability"}
+{"from":"0800f202","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Hobby servos fares Budget"}
+{"from":"1203960b","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Stiff cross rod fares Budget"}
+{"from":"1203960b","to":"d0784b3e","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Stiff cross rod fares Drawing speed"}
+{"from":"19109b12","to":"2cc55003","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Grit-wheel paper feed fares Paper format"}
+{"from":"19109b12","to":"f5828b1c","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Grit-wheel paper feed fares Drawing media"}
+{"from":"1dbdf725","to":"18882c3f","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"DC motors with encoders fares Repeatability"}
+{"from":"1dbdf725","to":"9dbd19bc","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"DC motors with encoders fares Budget"}
+{"from":"1dbdf725","to":"d0784b3e","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"DC motors with encoders fares Drawing speed"}
+{"from":"1f4df7b0","to":"2cc55003","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"CoreXY fares Paper format"}
+{"from":"1f4df7b0","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"CoreXY fares Budget"}
+{"from":"1f4df7b0","to":"d0784b3e","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"CoreXY fares Drawing speed"}
+{"from":"2e099434","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Cartesian, two Y rails fares Budget"}
+{"from":"2e099434","to":"d0784b3e","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Cartesian, two Y rails fares Drawing speed"}
+{"from":"328cfb43","to":"2cc55003","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"H-bot fares Paper format"}
+{"from":"328cfb43","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"H-bot fares Budget"}
+{"from":"328cfb43","to":"d0784b3e","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"H-bot fares Drawing speed"}
+{"from":"37a033a3","to":"18882c3f","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Geared 28BYJ-48 steppers fares Repeatability"}
+{"from":"37a033a3","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Geared 28BYJ-48 steppers fares Budget"}
+{"from":"37a033a3","to":"d0784b3e","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Geared 28BYJ-48 steppers fares Drawing speed"}
+{"from":"3bd9d7e2","to":"46e36bf8","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"V-slot wheels on aluminium extrusion fares Line quality"}
+{"from":"3bd9d7e2","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"V-slot wheels on aluminium extrusion fares Budget"}
+{"from":"3c12da47","to":"18882c3f","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Linear rails and bearing blocks fares Repeatability"}
+{"from":"3c12da47","to":"46e36bf8","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Linear rails and bearing blocks fares Line quality"}
+{"from":"3c12da47","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Linear rails and bearing blocks fares Budget"}
+{"from":"5249fcf9","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"FluidNC on ESP32 fares Budget"}
+{"from":"55904a34","to":"0e78dd37","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Solenoid pen lift fares Drawing tool"}
+{"from":"55904a34","to":"d0784b3e","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Solenoid pen lift fares Drawing speed"}
+{"from":"565c46d1","to":"18882c3f","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Pen rack and gripper fares Repeatability"}
+{"from":"565c46d1","to":"9dbd19bc","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Pen rack and gripper fares Budget"}
+{"from":"5cd4d3d5","to":"18882c3f","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Several pens on the carriage fares Repeatability"}
+{"from":"5cd4d3d5","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Several pens on the carriage fares Budget"}
+{"from":"5f53f3a8","to":"2cc55003","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Leadscrew drive fares Paper format"}
+{"from":"5f53f3a8","to":"d0784b3e","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Leadscrew drive fares Drawing speed"}
+{"from":"65317df5","to":"0e78dd37","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Rigid holder, depth set by the lift fares Drawing tool"}
+{"from":"65317df5","to":"f5828b1c","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Rigid holder, depth set by the lift fares Drawing media"}
+{"from":"749d3565","to":"2cc55003","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Frame mounted on a wall fares Paper format"}
+{"from":"7c43b5d5","to":"f5828b1c","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Bed board with clips or magnets fares Drawing media"}
+{"from":"9b55d6fc","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"GT2 belt drive fares Budget"}
+{"from":"9b55d6fc","to":"d0784b3e","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"GT2 belt drive fares Drawing speed"}
+{"from":"9b7ac8ab","to":"2cc55003","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Five-bar arm (SCARA) fares Paper format"}
+{"from":"9b7ac8ab","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Five-bar arm (SCARA) fares Budget"}
+{"from":"a09bf72f","to":"18882c3f","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Manual swap at a pause fares Repeatability"}
+{"from":"a09bf72f","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Manual swap at a pause fares Budget"}
+{"from":"a316aecc","to":"2cc55003","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Single-rail cantilever fares Paper format"}
+{"from":"a316aecc","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Single-rail cantilever fares Budget"}
+{"from":"a316aecc","to":"d0784b3e","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Single-rail cantilever fares Drawing speed"}
+{"from":"a316aecc","to":"f5828b1c","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Single-rail cantilever fares Drawing media"}
+{"from":"b1d14f50","to":"2cc55003","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Open frame set over the media fares Paper format"}
+{"from":"b1d14f50","to":"f5828b1c","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Open frame set over the media fares Drawing media"}
+{"from":"bb0b672f","to":"2cc55003","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Hanging polargraph fares Paper format"}
+{"from":"bb0b672f","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Hanging polargraph fares Budget"}
+{"from":"bb0b672f","to":"d0784b3e","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Hanging polargraph fares Drawing speed"}
+{"from":"c7102c51","to":"9dbd19bc","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"GRBL on Arduino Uno with CNC shield fares Budget"}
+{"from":"c9ca31d8","to":"0e78dd37","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Z-axis stepper lift fares Drawing tool"}
+{"from":"c9ca31d8","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Z-axis stepper lift fares Budget"}
+{"from":"c9ca31d8","to":"d0784b3e","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Z-axis stepper lift fares Drawing speed"}
+{"from":"d1dbee31","to":"0e78dd37","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Spring against a hard stop fares Drawing tool"}
+{"from":"d1dbee31","to":"f5828b1c","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Spring against a hard stop fares Drawing media"}
+{"from":"d4ddcf72","to":"9dbd19bc","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"EiBotBoard with the AxiDraw software fares Budget"}
+{"from":"dcefc61b","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Servo pen lift fares Budget"}
+{"from":"dcefc61b","to":"d0784b3e","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Servo pen lift fares Drawing speed"}
+{"from":"ddbfc16b","to":"18882c3f","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"NEMA 17 steppers fares Repeatability"}
+{"from":"ddbfc16b","to":"d0784b3e","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"NEMA 17 steppers fares Drawing speed"}
+{"from":"f01d277b","to":"0e78dd37","type":"fares","score":-1,"src":"LLM:claude-opus-5-5","hint":"Pen weight on a free slide fares Drawing tool"}
+{"from":"f01d277b","to":"9dbd19bc","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Pen weight on a free slide fares Budget"}
+{"from":"fba1701e","to":"0e78dd37","type":"fares","score":2,"src":"LLM:claude-opus-5-5","hint":"Voice coil pen actuator fares Drawing tool"}
+{"from":"fba1701e","to":"9dbd19bc","type":"fares","score":-2,"src":"LLM:claude-opus-5-5","hint":"Voice coil pen actuator fares Budget"}
+{"from":"fba1701e","to":"d0784b3e","type":"fares","score":1,"src":"LLM:claude-opus-5-5","hint":"Voice coil pen actuator fares Drawing speed"}
 {"from":"09d91f08","to":"65317df5","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Set the pen pressure > Rigid holder, depth set by the lift"}
 {"from":"09d91f08","to":"d1dbee31","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Set the pen pressure > Spring against a hard stop"}
 {"from":"09d91f08","to":"f01d277b","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Set the pen pressure > Pen weight on a free slide"}

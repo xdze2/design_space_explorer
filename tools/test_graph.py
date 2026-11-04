@@ -13,8 +13,9 @@ import graph  # noqa: E402
 REPO = Path(__file__).resolve().parent.parent
 
 
-def node_text(node_id, title, type_="solution"):
-    return f'---\nid: "{node_id}"\ntitle: {title}\ntype: {type_}\nsources: [user]\n---\nBody.\n'
+def node_text(node_id, title, type_="solution", summary=True):
+    summary = "summary: A line\n" if type_ in ("solution", "component") and summary else ""
+    return f'---\nid: "{node_id}"\ntitle: {title}\ntype: {type_}\n{summary}sources: [user]\n---\nBody.\n'
 
 
 class GraphTest(unittest.TestCase):
@@ -32,8 +33,8 @@ class GraphTest(unittest.TestCase):
         self.run_ok("link", "aaaa0002", "--how", "aaaa0003")
         self.run_ok("link", "aaaa0002", "--how", "aaaa0004")
 
-    def add(self, node_id, title, type_="solution"):
-        (self.dir / f"{node_id}.md").write_text(node_text(node_id, title, type_))
+    def add(self, node_id, title, type_="solution", summary=True):
+        (self.dir / f"{node_id}.md").write_text(node_text(node_id, title, type_, summary))
 
     def run_cmd(self, *argv):
         out, err = io.StringIO(), io.StringIO()
@@ -330,6 +331,52 @@ class GraphTest(unittest.TestCase):
         self.assertIn("constraint without a constrains link: aaaa000a Budget", out)
         self.assertIn("stale hint", out)
         self.assertEqual(self.links_text(), before)
+
+    def test_lint_missing_summary(self):
+        self.add("aaaa0005", "Bare", summary=False)
+        self.run_ok("link", "aaaa0002", "--how", "aaaa0005")
+        code, out, _ = self.run_cmd("lint")
+        self.assertEqual(code, 1)
+        self.assertIn("solution without a summary: aaaa0005 Bare", out)
+        self.assertEqual(len(out.splitlines()), 1)
+
+    # -- Fares and summary -----------------------------------------------------
+
+    def add_constraint(self):
+        self.add("aaaa000a", "Budget", "constraint")
+        self.run_ok("link", "aaaa000a", "--constrains", "aaaa0001")
+
+    def test_fares_with_score_and_key_order(self):
+        self.add_constraint()
+        self.run_ok("link", "aaaa0003", "--fares", "aaaa000a", "--score", "-1", "--src", "LLM:x")
+        line = [l for l in self.links_text().splitlines() if '"fares"' in l][0]
+        self.assertTrue(line.startswith('{"from":"aaaa0003","to":"aaaa000a","type":"fares","score":-1,"src":"LLM:x","hint":'), line)
+
+    def test_fares_rescore_keeps_one_line(self):
+        self.add_constraint()
+        self.run_ok("link", "aaaa0003", "--fares", "aaaa000a", "--score", "-1")
+        self.run_ok("link", "aaaa0003", "--fares", "aaaa000a", "--score", "-2")
+        fares = [l for l in self.links() if l["type"] == "fares"]
+        self.assertEqual([l["score"] for l in fares], [-2])
+        self.run_ok("unlink", "aaaa0003", "--fares", "aaaa000a")
+        self.assertEqual([l for l in self.links() if l["type"] == "fares"], [])
+
+    def test_fares_refused(self):
+        self.add_constraint()
+        self.assert_refused("link", "aaaa0003", "--fares", "aaaa000a")
+        self.assert_refused("link", "aaaa0003", "--fares", "aaaa000a", "--score", "0")
+        self.assert_refused("link", "aaaa0003", "--fares", "aaaa000a", "--score", "3")
+        self.assert_refused("link", "aaaa0003", "--fares", "aaaa0004", "--score", "1")
+        self.assert_refused("link", "aaaa0003", "--requires", "aaaa0004", "--score", "1")
+
+    def test_new_with_summary(self):
+        a = self.run_ok("new", "Rack", "--type", "solution", "--why", "aaaa0002", "--summary", "A gear on a toothed rack").strip()
+        self.assertIn("summary: A gear on a toothed rack\n", (self.dir / "rack.md").read_text())
+        self.assertEqual(self.run_cmd("lint")[:2], (0, ""), a)
+
+    def test_new_bad_summary_writes_nothing(self):
+        self.assert_refused("new", "Rack", "--type", "solution", "--why", "aaaa0002", "--summary", "x" * 121)
+        self.assert_refused("new", "Rack", "--type", "solution", "--why", "aaaa0002", "--summary", "a\nb")
 
     # -- The Node build accepts what the tool writes --------------------------
 

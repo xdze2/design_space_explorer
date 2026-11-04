@@ -4,6 +4,8 @@ title: Grit-wheel paper feed
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://en.wikipedia.org/wiki/HP_7470", "https://www.bitsavers.org/pdf/hp/plotter/7475A/07475-90000_7475A_Service_Manual_198708.pdf"]
 confidence: low
+summary: "Grit rollers move the paper on one axis and the pen carriage on the other, as in an office plotter"
+abbr: GRIT
 ---
 **Why choose it.** The office plotter layout (HP 7470): grit-covered rollers with pinch wheels move the paper along one axis, and the pen carriage moves along a rail on the other. Compact, the machine is no wider than the paper, and the sheet length is nearly unlimited (rolls).
 

@@ -4,6 +4,8 @@ title: GT2 belt drive
 type: solution
 sources: ["LLM:claude-sonnet", "raw/DIY A3 pen plotter - Claude.md", "LLM:claude-opus-5-5"]
 confidence: low
+summary: "A toothed belt over pulleys and idlers: cheap, light and fast, with limited accuracy from belt stretch"
+abbr: GT2
 ---
 **Why choose it.** Cheap, light and fast. With common pulleys and fine microstepping it gives plenty of resolution for drawing, and it suits every belt-based layout; CoreXY and the H-bot require it.
 

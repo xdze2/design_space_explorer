@@ -4,6 +4,7 @@ title: Open frame set over the media
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled", "https://cdn.evilmadscientist.com/wiki/axidraw/software/AxiDraw_V37r1.pdf"]
 confidence: low
+summary: "The machine has no bottom and stands over the media: any support that fits under the frame, of any size"
 ---
 **Why choose it.** The machine has no bottom: it stands on the table and the sheet, notebook, card or wood panel goes underneath, as with the AxiDraw and the EasyDraw ("any flat surface"). Any support and thickness that fits under the frame, of any size larger than the machine.
 

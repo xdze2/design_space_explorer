@@ -4,6 +4,7 @@ title: Bed board with clips or magnets
 type: solution
 sources: ["LLM:claude-opus-5-5"]
 confidence: low
+summary: "A flat board under the gantry holds the sheet with clips, tape or magnets at a known height"
 ---
 **Why choose it.** A flat board (MDF, plywood, glass) under the gantry, with the sheet held by clips, tape or magnets on a steel sheet. The sheet stays at a known height and position, so pen travel and alignment are set once.
 

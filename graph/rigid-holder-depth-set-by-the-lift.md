@@ -4,6 +4,7 @@ title: "Rigid holder, depth set by the lift"
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://lauda.ulapland.fi/bitstream/handle/10024/65132/Bircher_Martin.pdf"]
 confidence: low
+summary: "A rigid pen holder whose pressure is set by how far the lift pushes it down: exact, but needs a flat surface"
 ---
 **Why choose it.** The pen is clamped rigidly and the lift moves it to a set height, so the pressure is set by how far it is pushed down. Exact control of a brush's contact width and of how a pencil bites.
 

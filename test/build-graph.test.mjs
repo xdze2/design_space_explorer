@@ -359,3 +359,49 @@ test('a stale hint does not matter and is not copied to the output', () => {
   const { text } = build({ 'root.md': ROOT, 'a.md': sol(A, 'A') }, [how(R, A, { hint: 'Totally > Wrong' })]);
   assert.ok(!text.includes('Wrong'));
 });
+
+test('summary and abbr are accepted and copied; bad ones fail', () => {
+  const { byId } = build(
+    { 'root.md': ROOT, 'a.md': sol(A, 'A', ['summary: Two motors and crossed belts', 'abbr: XY']) },
+    [how(R, A)],
+  );
+  assert.equal(byId[A].summary, 'Two motors and crossed belts');
+  assert.equal(byId[A].abbr, 'XY');
+  const links = [how(R, A)];
+  expectFailure({ 'root.md': ROOT, 'a.md': sol(A, 'A', ['summary: "one\\ntwo"']) }, links, /a\.md: summary/);
+  expectFailure({ 'root.md': ROOT, 'a.md': sol(A, 'A', [`summary: ${'x'.repeat(121)}`]) }, links, /a\.md: summary/);
+  expectFailure({ 'root.md': ROOT, 'a.md': sol(A, 'A', ['abbr: GT-2']) }, links, /a\.md: abbr/);
+  expectFailure({ 'root.md': ROOT, 'a.md': sol(A, 'A', ['abbr: ABCDE']) }, links, /a\.md: abbr/);
+});
+
+test('fares links land sorted on the source node, scores are validated', () => {
+  const files = { 'root.md': ROOT, 'a.md': sol(A, 'A'), 'k.md': con(C, 'K'), 'l.md': con(D, 'L') };
+  const base = [how(R, A), link('constrains', C, R), link('constrains', D, R)];
+  const { byId } = build(files, [...base, link('fares', A, D, { score: 2 }), link('fares', A, C, { score: -1 })]);
+  assert.deepEqual(byId[A].fares, [{ id: C, score: -1 }, { id: D, score: 2 }]);
+  assert.deepEqual(byId[C].fares, []);
+  for (const score of [undefined, 0, 3, 1.5, '1']) {
+    expectFailure(files, [...base, link('fares', A, C, { score })], /^links\.jsonl:4: fares needs a score/);
+  }
+  expectFailure(files, [how(R, A, { score: 1 })], /^links\.jsonl:1: score is only allowed on fares/);
+});
+
+test('fares only joins a solution or component to a constraint', () => {
+  const files = { 'root.md': ROOT, 'a.md': sol(A, 'A'), 'b.md': sol(B, 'B'), 'k.md': con(C, 'K') };
+  const base = [how(R, A), how(R, B)];
+  expectFailure(files, [...base, link('fares', A, B, { score: 1 })], /links\.jsonl:3: fares link from solution to solution/);
+  expectFailure(files, [...base, link('fares', A, R, { score: 1 })], /links\.jsonl:3: fares link from solution to function/);
+  expectFailure(files, [...base, link('fares', C, A, { score: 1 })], /links\.jsonl:3: fares link from constraint to solution/);
+});
+
+test('pictures: img flag, unknown id, wrong extension, too large, no folder', () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg"/>';
+  const files = { 'root.md': ROOT, 'a.md': sol(A, 'A') };
+  const { byId } = build({ ...files, [`img/${A}.svg`]: svg }, [how(R, A)]);
+  assert.equal(byId[A].img, true);
+  assert.ok(!('img' in byId[R]));
+  expectFailure({ ...files, 'img/deadbeef.svg': svg }, [how(R, A)], /img\/deadbeef\.svg/);
+  expectFailure({ ...files, [`img/${A}.png`]: 'x' }, [how(R, A)], new RegExp(`img/${A}\\.png`));
+  expectFailure({ ...files, [`img/${A}.svg`]: 'x'.repeat(51 * 1024) }, [how(R, A)], /larger than 50 kB/);
+  assert.ok(!('img' in build(files, [how(R, A)]).byId[A]));
+});

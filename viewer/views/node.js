@@ -3,6 +3,7 @@ import { buildHash } from '../hash.js';
 import { chipState, entryOf, functionOf, solutionsOf, whatIf, whyPath } from '../design.js';
 import { el } from '../dom.js';
 import { typeIcon } from '../icons.js';
+import { card } from '../card.js';
 
 const joined = (links) => links.flatMap((a, i) => (i ? [', ', a] : [a]));
 
@@ -28,11 +29,16 @@ export function render(graph, store, analysis, route) {
 
   const body = el('div', { class: 'body' });
   body.innerHTML = renderMarkdown(node.body ?? '');
+  const selectable = node.type === 'solution' || node.type === 'component';
   panel.append(
     el('h2', {}, typeIcon(node.type), node.title),
+    ...(selectable ? [el('div', { class: 'card-head' }, card(graph, node, { at, header: true }))]
+      : node.summary ? [el('p', { class: 'node-summary' }, node.summary)] : []),
     el('p', { class: 'meta' }, `${node.type} · confidence: ${node.confidence ?? 'n/a'} · `, el('code', {}, node.id)),
-    body,
-    el('p', { class: 'sources' }, 'Sources: ', (node.sources ?? []).join('; ') || 'none'));
+    el('details', { class: 'detail', ...(node.summary ? {} : { open: '' }) },
+      el('summary', {}, 'Details'),
+      body,
+      el('p', { class: 'sources' }, 'Sources: ', (node.sources ?? []).join('; ') || 'none')));
 
   // Context: where it sits.
   const siblings = node.type === 'solution'
@@ -87,6 +93,13 @@ function statusSection(graph, store, analysis, node, fnId, at, link) {
   if (node.type === 'constraint') {
     const value = design.constraints[node.id];
     box.append(value ? el('p', {}, el('strong', {}, 'Value: '), value) : el('p', { class: 'hint' }, 'No value set yet.'));
+    const fares = graph.nodes.flatMap((n) => (n.fares ?? []).filter((f) => f.id === node.id).map((f) => ({ id: n.id, score: f.score })));
+    for (const [label, keep] of [['Doing well', (f) => f.score > 0], ['Doing badly', (f) => f.score < 0]]) {
+      const ids = fares.filter(keep).sort((a, b) => Math.abs(b.score) - Math.abs(a.score)
+        || (graph.byId.get(a.id).title < graph.byId.get(b.id).title ? -1 : 1));
+      if (ids.length) box.append(el('p', { class: 'edges' }, el('strong', {}, `${label}: `),
+        ...joined(ids.map((f) => el('span', {}, link(f.id), ` (${f.score > 0 ? '+' : '−'}${Math.abs(f.score)})`)))));
+    }
   } else if (node.type === 'solution') {
     if (!fnId) return box;
     const chip = chipState(analysis, design, fnId, node.id);
@@ -98,12 +111,11 @@ function statusSection(graph, store, analysis, node, fnId, at, link) {
     if (!analysis.active.has(node.id)) box.append(el('p', { class: 'hint' }, 'Not part of the design right now: nothing chosen above brings it in. Its entry is kept.'));
     if (sols.length) {
       box.append(el('p', {}, el('strong', {}, 'Status: '), e.status, ...(e.choice ? [' · choice: ', link(e.choice)] : [])));
-      box.append(el('ul', { class: 'options' }, ...sols.map((solId) => {
+      box.append(el('div', { class: 'cards' }, ...sols.map((solId) => {
         const chip = chipState(analysis, design, node.id, solId);
-        return el('li', { class: chip.state },
-          el('span', { class: 'sol' }, link(solId)),
-          el('span', { class: 'state' }, ...stateText(graph, chip, link)),
-          solutionControls(store, node.id, solId, chip));
+        return card(graph, graph.byId.get(solId), {
+          at, chip, state: stateText(graph, chip, link), controls: solutionControls(store, node.id, solId, chip),
+        });
       })));
     } else {
       box.append(el('p', { class: 'hint' }, 'This function has no solutions to choose from; it breaks down into the functions below it.'));

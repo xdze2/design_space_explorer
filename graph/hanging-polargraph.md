@@ -4,6 +4,8 @@ title: Hanging polargraph
 type: solution
 sources: ["LLM:claude-opus-5-5", "https://stefan.wtf/p/penplotter", "https://forum.duet3d.com/topic/35248/duet-polargraph", "https://uunatek.com/blogs/tips-and-tricks/hanging-plotter-turning-vertical-creativity-into-reality-with-idraw-h-a1-pen-plotter"]
 confidence: low
+summary: "Two top motors and cords hold a hanging gondola on a wall board: cheap and huge, but slow and sloppy at the edges"
+abbr: POLG
 ---
 **Why choose it.** Two motors at the top corners of a wall board, with belts or cords down to a hanging gondola that holds the pen. The cheapest way to a large drawing area (move the motors apart and use longer belts), and it takes almost no floor space.
 

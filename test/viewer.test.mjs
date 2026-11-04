@@ -6,6 +6,7 @@ import { parseHash, buildHash } from '../viewer/hash.js';
 import { visibleRows, togglePeek, toggleFold } from '../viewer/outline.js';
 import { emptyDesign, choose, reject, shortlist, setNotes, setIntent, analyzeDesign } from '../viewer/design.js';
 import { designKey, contentHash, buildPrompt } from '../viewer/brief.js';
+import { abbreviation, tileLabel, badges } from '../viewer/card.js';
 import { idByTitle } from './helpers.mjs';
 
 const data = JSON.parse(readFileSync(new URL('../graph.json', import.meta.url)));
@@ -251,4 +252,23 @@ test('brief: prompt notes a conflict and an entry that is not in the design any 
   d = choose(graph, d, MOVE, CANTILEVER);
   assert.match(buildPrompt(template, graph, d), /dormant note|not part of the current design/);
   assert.match(buildPrompt(template, graph, d), /\[not part of the current design\]/);
+});
+
+test('card: derived abbreviations and the abbr override', () => {
+  assert.equal(abbreviation('NEMA 17 steppers'), 'N17S');
+  assert.equal(abbreviation('Linear rails and bearing blocks'), 'LRBB');
+  assert.equal(abbreviation('CoreXY'), 'CO');
+  assert.equal(abbreviation('Spring-loaded 3D-printed pen holder'), 'SL3D');
+  assert.equal(tileLabel({ title: 'GT2 belt drive', abbr: 'GT2' }), 'GT2');
+  assert.equal(tileLabel({ title: 'GT2 belt drive' }), 'GT2B');
+});
+
+test('card: badges are ordered by score then title, with marks and words', () => {
+  const g = { byId: new Map([['k1', { title: 'Budget' }], ['k2', { title: 'Drawing speed' }], ['k3', { title: 'Line quality' }], ['k4', { title: 'Accuracy' }]]) };
+  const node = { fares: [{ id: 'k1', score: -1 }, { id: 'k3', score: 1 }, { id: 'k2', score: 2 }, { id: 'k4', score: 1 }, { id: 'gone', score: 2 }] };
+  const out = badges(g, node);
+  assert.deepEqual(out.map((b) => `${b.mark} ${b.title}`), ['++ Drawing speed', '+ Accuracy', '+ Line quality', '− Budget']);
+  assert.equal(out[0].words, 'much better on');
+  assert.deepEqual(badges(g, {}), []);
+  assert.deepEqual(badges(g, { fares: [{ id: 'k1', score: -2 }] }).map((b) => b.mark), ['−−']);
 });

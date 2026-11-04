@@ -12,12 +12,14 @@ import secrets
 import sys
 from pathlib import Path
 
-LINK_TYPES = ("how", "constrains", "requires", "excludes", "compatible_with")
+LINK_TYPES = ("how", "constrains", "requires", "excludes", "compatible_with", "fares")
 NODE_TYPES = ("function", "solution", "component", "constraint")
 HOW_PAIRS = (("function", "function"), ("function", "solution"), ("solution", "function"), ("solution", "component"))
 SELECTABLE = ("solution", "component")
 CONFIDENCES = ("low", "medium", "high")
-KEY_ORDER = ("from", "to", "type", "order", "src", "hint")
+KEY_ORDER = ("from", "to", "type", "order", "score", "src", "hint")
+SCORES = (-2, -1, 1, 2)
+SUMMARY_MAX = 120
 DEFAULT_GRAPH_DIR = Path(__file__).resolve().parent.parent / "graph"
 
 
@@ -38,7 +40,7 @@ def _scalar(value):
 
 
 def read_frontmatter(path):
-    """Return the top-level `id`, `title` and `type` scalars of a node file (line scan, no YAML)."""
+    """Return the top-level `id`, `title`, `type` and `summary` scalars of a node file (line scan, no YAML)."""
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
         raise GraphError(f"{path.name}: missing frontmatter")
@@ -46,7 +48,7 @@ def read_frontmatter(path):
     for line in lines[1:]:
         if line.strip() == "---":
             break
-        m = re.match(r"(id|title|type):\s*(.*)$", line)
+        m = re.match(r"(id|title|type|summary):\s*(.*)$", line)
         if m:
             found[m.group(1)] = _scalar(m.group(2))
     return found
@@ -62,7 +64,7 @@ def read_nodes(graph_dir):
             raise GraphError(f"{path.relative_to(graph_dir)}: no id in frontmatter")
         if node_id in nodes:
             raise GraphError(f"duplicate id {node_id} in {path.relative_to(graph_dir)} and {nodes[node_id]['path'].relative_to(graph_dir)}")
-        nodes[node_id] = {"id": node_id, "title": meta.get("title", node_id), "type": meta.get("type"), "path": path}
+        nodes[node_id] = {"id": node_id, "title": meta.get("title", node_id), "type": meta.get("type"), "summary": meta.get("summary"), "path": path}
     return nodes
 
 
@@ -169,6 +171,8 @@ def check_pair(link_type, a, b):
         ok = (a, b) in HOW_PAIRS
     elif link_type == "constrains":
         ok = (a, b) == ("constraint", "function")
+    elif link_type == "fares":
+        ok = a in SELECTABLE and b == "constraint"
     else:
         ok = a in SELECTABLE and b in SELECTABLE
     if not ok:
@@ -215,12 +219,22 @@ def cmd_link(args, graph_dir, out):
     src = resolve(args.node, nodes)
     wanted = [(t, resolve(ref, nodes)) for t, ref in link_args(args)]
     if not wanted:
-        raise GraphError("nothing to link: give --how, --constrains, --requires, --excludes or --compatible-with")
+        raise GraphError("nothing to link: give --how, --constrains, --requires, --excludes, --compatible-with or --fares")
     if args.order is not None and [t for t, _ in wanted] != ["how"]:
         raise GraphError("--order goes with exactly one --how link")
+    fares = [t for t, _ in wanted if t == "fares"]
+    if fares and args.score not in SCORES:
+        raise GraphError("--fares needs --score -2, -1, 1 or 2")
+    if args.score is not None and not fares:
+        raise GraphError("--score goes with --fares")
     for t, dst in wanted:
         if src == dst:
             raise GraphError(f"{src}: cannot link a node to itself")
+        if t == "fares":
+            check_pair(t, nodes[src]["type"], nodes[dst]["type"])
+            links = [l for l in links if sort_key(l) != (t, src, dst)]  # linking again rescores
+            links.append({"from": src, "to": dst, "type": t, "score": args.score, "src": args.src})
+            continue
         if any(sort_key(l) == (t, src, dst) for l in links):
             raise GraphError(f"link already exists: {t} {src} -> {dst}")
         check_pair(t, nodes[src]["type"], nodes[dst]["type"])
@@ -242,7 +256,7 @@ def cmd_unlink(args, graph_dir, out):
     src = resolve(args.node, nodes)
     wanted = [(t, resolve(ref, nodes)) for t, ref in link_args(args)]
     if not wanted:
-        raise GraphError("nothing to unlink: give --how, --constrains, --requires, --excludes or --compatible-with")
+        raise GraphError("nothing to unlink: give --how, --constrains, --requires, --excludes, --compatible-with or --fares")
     for t, dst in wanted:
         keep = [l for l in links if sort_key(l) != (t, src, dst)]
         if len(keep) == len(links):
@@ -285,6 +299,9 @@ def cmd_new(args, graph_dir, out):
     title = args.title.strip()
     if not title:
         raise GraphError("title must not be empty")
+    summary = args.summary
+    if summary is not None and ("\n" in summary or "\r" in summary or len(summary) > SUMMARY_MAX):
+        raise GraphError(f"summary must be a single line of at most {SUMMARY_MAX} characters")
     why_ids = [resolve(ref, nodes) for ref in args.why or []]
     constrains_ids = [resolve(ref, nodes) for ref in args.constrains or []]
     if args.type == "constraint":
@@ -316,6 +333,8 @@ def cmd_new(args, graph_dir, out):
     fields.append("sources: " + json.dumps(args.source or ["user"], ensure_ascii=False))
     if args.confidence:
         fields.append(f"confidence: {args.confidence}")
+    if summary:
+        fields.append(f"summary: {yaml_scalar(summary)}")
     graph_dir.mkdir(parents=True, exist_ok=True)
     path.write_text("---\n" + "\n".join(fields) + "\n---\n", encoding="utf-8")
     nodes[new_id] = {"id": new_id, "title": title, "type": args.type, "path": path}
@@ -408,6 +427,9 @@ def cmd_lint(args, graph_dir, out):
     for i in sorted(nodes, key=title_key(nodes)):
         if nodes[i]["type"] == "constraint" and i not in constrainers:
             findings.append(f"constraint without a constrains link: {label(i, nodes)}")
+    for i in sorted(nodes, key=title_key(nodes)):
+        if nodes[i]["type"] in SELECTABLE and not nodes[i]["summary"]:
+            findings.append(f"{nodes[i]['type']} without a summary: {label(i, nodes)}")
     pairs = {(l["from"], l["to"]) for l in known if l["type"] == "requires"}
     for l in sorted((l for l in known if l["type"] == "excludes"), key=sort_key):
         if (l["from"], l["to"]) in pairs or (l["to"], l["from"]) in pairs:
@@ -438,6 +460,7 @@ def build_parser():
     s.add_argument("--constrains", action="append", metavar="ID", help="function a constraint limits (repeatable; constraints only)")
     s.add_argument("--source", action="append", help="node source (repeatable, default: user)")
     s.add_argument("--confidence", choices=CONFIDENCES)
+    s.add_argument("--summary", metavar="TEXT", help=f"one-line description, at most {SUMMARY_MAX} characters")
     s.add_argument("--src", default="user", help="provenance recorded on the new links")
     s.set_defaults(run=cmd_new)
 
@@ -446,6 +469,7 @@ def build_parser():
     add_link_options(s)
     s.add_argument("--src", default="user", help="provenance recorded on the links (default: user)")
     s.add_argument("--order", type=int, metavar="N", help="position of a new --how link among its parent's children")
+    s.add_argument("--score", type=int, metavar="N", help="score of a --fares link: -2, -1, 1 or 2 (linking again rescores)")
     s.set_defaults(run=cmd_link)
 
     s = sub.add_parser("unlink", help="remove links from a node")

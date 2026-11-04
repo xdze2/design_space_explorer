@@ -5,13 +5,16 @@ import { parse } from 'yaml';
 
 const TYPES = ['function', 'solution', 'component', 'constraint'];
 const CONFIDENCES = ['low', 'medium', 'high'];
-const LINK_TYPES = ['how', 'constrains', 'requires', 'excludes', 'compatible_with'];
+const LINK_TYPES = ['how', 'constrains', 'requires', 'excludes', 'compatible_with', 'fares'];
 // fields that used to live in the frontmatter and are now links (or gone)
 const FORBIDDEN_FIELDS = ['slot', 'parent', 'requires', 'excludes', 'compatible_with'];
 // allowed "from>to" type pairs of a how link
 const HOW_PAIRS = ['function>function', 'function>solution', 'solution>function', 'solution>component'];
 const SELECTABLE = ['solution', 'component'];
 const ID_PATTERN = /^[0-9a-f]{8}$/;
+const SCORES = [-2, -1, 1, 2];
+const SUMMARY_MAX = 120;
+const IMG_MAX_BYTES = 50 * 1024;
 
 // Node files sit directly under `dir`; a .md file in a subfolder is reported in `nested`.
 function listMarkdown(dir, nested, top = true) {
@@ -59,6 +62,12 @@ function validateNodes(nodes, errors) {
     if (n.confidence !== undefined && !CONFIDENCES.includes(n.confidence)) {
       bad(`confidence must be one of ${CONFIDENCES.join(', ')}`);
     }
+    if (n.summary !== undefined && (typeof n.summary !== 'string' || /[\r\n]/.test(n.summary) || n.summary.length > SUMMARY_MAX)) {
+      bad(`summary must be a single line of at most ${SUMMARY_MAX} characters`);
+    }
+    if (n.abbr !== undefined && !/^[A-Za-z0-9]{1,4}$/.test(String(n.abbr))) {
+      bad('abbr must be 1 to 4 letters or digits');
+    }
     for (const field of FORBIDDEN_FIELDS) {
       if (n[field] !== undefined) bad(`${field} is not allowed in the frontmatter (links go in links.jsonl)`);
     }
@@ -81,6 +90,8 @@ function checkPair(at, link, byId, errors) {
     if (!HOW_PAIRS.includes(pair)) return fail(`how joins ${HOW_PAIRS.join(', ')}`);
   } else if (link.type === 'constrains') {
     if (pair !== 'constraint>function') return fail('constrains goes from a constraint to a function');
+  } else if (link.type === 'fares') {
+    if (!SELECTABLE.includes(a) || b !== 'constraint') return fail('fares goes from a solution or component to a constraint');
   } else if (!SELECTABLE.includes(a) || !SELECTABLE.includes(b)) {
     return fail('only solutions and components can be linked this way');
   }
@@ -139,6 +150,15 @@ function readLinks(file, byId, errors) {
         return;
       }
     }
+    if (link.type === 'fares') {
+      if (!SCORES.includes(link.score)) {
+        errors.push(`${at}: fares needs a score of ${SCORES.join(', ')}`);
+        return;
+      }
+    } else if (link.score !== undefined) {
+      errors.push(`${at}: score is only allowed on fares links`);
+      return;
+    }
     const key = `${link.type} ${link.from} ${link.to}`;
     if (seen.has(key)) {
       errors.push(`${at}: duplicate of line ${seen.get(key)} (${link.type} ${link.from} -> ${link.to})`);
@@ -188,13 +208,36 @@ function checkHierarchy(nodes, whys, hows, byId, errors) {
   return roots[0].id;
 }
 
-function compile(nodes, links, whys, hows) {
+// Pictures are graph/img/<id>.svg; returns the set of ids that have one.
+function listPictures(dir, byId, errors) {
+  const ids = new Set();
+  if (!existsSync(dir)) return ids;
+  for (const name of readdirSync(dir).sort()) {
+    const file = `img/${name}`;
+    const id = name.endsWith('.svg') ? name.slice(0, -4) : null;
+    if (id === null || !byId.has(id)) {
+      errors.push(`${file}: pictures must be named <node id>.svg after an existing node`);
+    } else if (statSync(join(dir, name)).size > IMG_MAX_BYTES) {
+      errors.push(`${file}: picture is larger than ${IMG_MAX_BYTES / 1024} kB`);
+    } else {
+      ids.add(id);
+    }
+  }
+  return ids;
+}
+
+function compile(nodes, links, whys, hows, pictures) {
   const lists = {};
   for (const field of ['requires', 'excludes', 'compatible_with', 'constrains', 'constrained_by']) {
     lists[field] = new Map(nodes.map((n) => [n.id, new Set()]));
   }
+  const fares = new Map(nodes.map((n) => [n.id, []]));
   for (const l of links) {
     if (l.type === 'how') continue;
+    if (l.type === 'fares') {
+      fares.get(l.from).push({ id: l.to, score: l.score });
+      continue;
+    }
     lists[l.type].get(l.from).add(l.to);
     // excludes is symmetric: make both directions explicit
     if (l.type === 'excludes') lists.excludes.get(l.to).add(l.from);
@@ -212,6 +255,8 @@ function compile(nodes, links, whys, hows) {
       requires: [...lists.requires.get(meta.id)].sort(),
       excludes: [...lists.excludes.get(meta.id)].sort(),
       compatible_with: [...lists.compatible_with.get(meta.id)].sort(),
+      fares: fares.get(meta.id).sort((a, b) => (a.id < b.id ? -1 : 1)),
+      ...(pictures.has(meta.id) ? { img: true } : {}),
     }));
 }
 
@@ -246,10 +291,11 @@ export function buildGraph(graphDir, outFile) {
       || (title(a.to) < title(b.to) ? -1 : title(a.to) > title(b.to) ? 1 : 0)
       || (a.to < b.to ? -1 : 1))
     .forEach((l) => hows.get(l.from).push(l.to));
+  const pictures = listPictures(join(root, 'img'), byId, errors);
   let rootId;
   if (!errors.length) rootId = checkHierarchy(nodes, whys, hows, byId, errors);
   if (errors.length) return { errors };
-  const graph = { root: rootId, nodes: compile(nodes, links, whys, hows) };
+  const graph = { root: rootId, nodes: compile(nodes, links, whys, hows, pictures) };
   writeFileSync(outFile, JSON.stringify(graph, null, 2) + '\n');
   return { errors: [], graph };
 }

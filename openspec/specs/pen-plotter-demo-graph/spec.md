@@ -27,7 +27,7 @@ The demo graph SHALL pass the build with no errors.
 - **THEN** it exits with code 0 and writes `graph.json`
 
 ### Requirement: Demo graph structure
-The demo graph SHALL be a new FAST tree about a DIY pen plotter, authored from scratch with `tools/graph.py` (new generated ids, free titles and structure), and SHALL contain between 15 and 30 nodes. It SHALL have one main function, at least three first-level functions, and at least two solutions for each function whose how-targets are solutions. At least one function SHALL have alternative solutions at depth 2 or more under a solution, showing the AND/OR alternation (for example sub-functions brought by a gantry solution, each with its own solutions). At least one sub-function SHALL be shared by two solutions (several whys). At least one solution SHALL have component children. It SHALL build without error and pass `lint` with no finding.
+The demo graph SHALL be a new FAST tree about a DIY pen plotter, authored from scratch with `tools/graph.py` (new generated ids, free titles and structure), and SHALL contain between 40 and 70 nodes. It SHALL have one main function, at least three first-level functions, and at least two solutions for each function whose how-targets are solutions. At least one function SHALL have alternative solutions at depth 2 or more under a solution, showing the AND/OR alternation (for example sub-functions brought by a gantry solution, each with its own solutions). At least one sub-function SHALL be shared by two solutions (several whys). At least one solution SHALL have component children. It SHALL build without error and pass `lint` with no finding.
 
 #### Scenario: Coverage check
 - **WHEN** the graph is built

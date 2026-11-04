@@ -4,6 +4,7 @@ title: Servo pen lift
 type: solution
 sources: ["LLM:claude-sonnet", "raw/DIY A3 pen plotter - Claude.md", "LLM:claude-opus-5-5", "https://cdn.evilmadscientist.com/wiki/axidraw/software/AxiDraw_V37r1.pdf", "https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled", "https://bantamtools.com/products/brushless-upgrade-axidraw"]
 confidence: low
+summary: "A hobby servo swings an arm to raise and lower the pen: cheap and light, but a wear part"
 ---
 **Why choose it.** A hobby servo swings an arm to raise and lower the pen. Cheap, light, one signal wire. It only sets the up and down positions; how hard the pen presses is a sub-function of its own. The AxiDraw and the EasyDraw both work this way.
 
