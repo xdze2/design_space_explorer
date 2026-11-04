@@ -17,11 +17,11 @@ function edgeList(graph, label, ids, href) {
   return el('p', {}, `${label}: `, ...links.flatMap((a, i) => (i ? [', ', a] : [a])));
 }
 
-// Node detail, mounted as a drawer (Design) or the main pane (Graph). `route` is { page, pick, view }.
-export function render(graph, { page, pick, view }) {
+// Node detail, mounted as a drawer (Design) or the main pane (Graph). `route` is { pick, view }.
+export function render(graph, { pick, view }) {
   const node = graph.byId.get(view);
-  const at = (id) => buildHash(page, { pick, view: id });
-  const choose = (id) => buildHash(page, { pick: toggle(graph, pick, id), view });
+  const at = (id) => buildHash({ pick, view: id });
+  const choose = (id) => buildHash({ pick: toggle(graph, pick, id), view });
   const body = el('div', { class: 'body' });
   body.innerHTML = renderMarkdown(node.body ?? '');
 

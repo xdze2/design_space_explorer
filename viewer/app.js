@@ -1,18 +1,18 @@
 import { parseHash, buildHash, DEFAULT_HASH } from './hash.js';
 import { render as renderGraph } from './views/graph.js';
-import { render as renderDesign } from './views/design.js';
-import { render as renderTray } from './views/tray.js';
+import { render as renderMain } from './views/main.js';
+import { render as renderTopbar } from './views/topbar.js';
 import { render as renderNode } from './views/node.js';
 import { el } from './dom.js';
 
-const pages = { graph: renderGraph, design: renderDesign };
-const app = document.getElementById('app');
+const $ = (id) => document.getElementById(id);
+const topbar = $('topbar');
+const graphPanel = $('graph-panel');
+const mainPanel = $('main-panel');
+const modal = $('modal');
 let graph;
 let closeHref = null;
-
-function show(...nodes) {
-  app.replaceChildren(...nodes);
-}
+let current;
 
 async function load() {
   const res = await fetch('../graph.json');
@@ -27,32 +27,44 @@ async function load() {
   return { nodes: data.nodes, byId, rootId: root.id };
 }
 
+// Replace a panel's content, keeping its scroll position.
+function fill(panel, ...nodes) {
+  const top = panel.scrollTop;
+  panel.replaceChildren(...nodes.filter((n) => n != null && n !== false && n !== ""));
+  panel.scrollTop = top;
+}
+
 function route() {
   if (!location.hash) {
     location.hash = DEFAULT_HASH;
     return;
   }
-  const route = parseHash(location.hash, new Set(graph.byId.keys()));
-  const { page, pick, view, unknown } = route;
+  current = parseHash(location.hash, new Set(graph.byId.keys()));
+  const { pick, view, unknown } = current;
   const notice = unknown.length
     ? el('p', { class: 'notice' }, `Ignored unknown node id: ${unknown.join(', ')}`)
     : '';
-  // Header links keep the selection.
-  document.getElementById('nav-design').href = buildHash('design', { pick });
-  document.getElementById('nav-graph').href = buildHash('graph', { pick });
-  const main = el('div', { class: 'main' }, notice, pages[page](graph, route));
-  let layout = el('div', { class: 'layout single' }, main);
-  closeHref = null;
-  if (page === 'design' && view) {
-    // The drawer sits beside the page, which stays rendered and clickable.
-    closeHref = buildHash('design', { pick });
+  fill(topbar, ...renderTopbar(graph, current));
+  fill(graphPanel, renderGraph(graph, current));
+  fill(mainPanel, notice, renderMain(graph, current));
+
+  // The node sits in a modal over the page, which stays rendered underneath.
+  if (view) {
+    closeHref = buildHash({ pick });
     const close = el('a', { class: 'close', href: closeHref, 'aria-label': 'Close' }, '×');
-    const drawer = el('aside', { class: 'drawer', 'aria-label': graph.byId.get(view).title }, close, renderNode(graph, route));
-    layout = el('div', { class: 'layout' }, main, drawer);
+    const dialog = el('div', { class: 'dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': graph.byId.get(view).title },
+      close, renderNode(graph, current));
+    const scrim = el('div', { class: 'scrim' }, dialog);
+    scrim.addEventListener('click', (e) => {
+      if (e.target === scrim) location.hash = closeHref;
+    });
+    modal.replaceChildren(scrim);
+    modal.hidden = false;
+  } else {
+    closeHref = null;
+    modal.replaceChildren();
+    modal.hidden = true;
   }
-  const y = scrollY;
-  show(renderTray(graph, route), layout);
-  scrollTo(0, y);
 }
 
 addEventListener('keydown', (e) => {
@@ -64,5 +76,5 @@ try {
   addEventListener('hashchange', route);
   route();
 } catch (e) {
-  show(el('p', { class: 'error' }, `Could not load the graph: ${e.message}`));
+  fill(mainPanel, el('p', { class: 'error' }, `Could not load the graph: ${e.message}`));
 }

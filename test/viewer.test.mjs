@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { renderMarkdown } from '../viewer/markdown.js';
 import { parseHash, buildHash } from '../viewer/hash.js';
+import { outlineRows, crossLinks } from '../viewer/outline.js';
 import { toggle, analyze, undecided } from '../viewer/select.js';
 import { idByTitle } from './helpers.mjs';
 
@@ -27,28 +28,29 @@ test('markdown: HTML is escaped', () => {
   assert.ok(html.includes('&lt;script&gt;'));
 });
 
-test('hash: page, pick and view round trip', () => {
-  const s = parseHash(`#/design?pick=${COREXY},${BELT}&view=${HBOT}`, known);
-  assert.deepEqual(s, {
-    page: 'design', pick: [COREXY, BELT], view: HBOT, up: 3, down: 2, unknown: [],
-  });
-  assert.deepEqual(parseHash('#/graph', known), { page: 'graph', pick: [], view: null, up: 3, down: 2, unknown: [] });
-  assert.equal(buildHash('design', { pick: ['a/b', 'c/d'] }), '#/design?pick=a/b,c/d');
-  assert.equal(buildHash('design'), '#/design');
-  assert.equal(buildHash('graph', { pick: ['x/y'], view: 'gantry/corexy' }), '#/graph?pick=x/y&view=gantry/corexy');
+test('hash: pick and view round trip', () => {
+  const s = parseHash(`#/?pick=${COREXY},${BELT}&view=${HBOT}`, known);
+  assert.deepEqual(s, { pick: [COREXY, BELT], view: HBOT, unknown: [] });
+  assert.equal(buildHash({ pick: ['a/b', 'c/d'] }), '#/?pick=a/b,c/d');
+  assert.equal(buildHash(), '#/');
+  assert.equal(buildHash({ pick: ['x/y'], view: 'gantry/corexy' }), '#/?pick=x/y&view=gantry/corexy');
 });
 
-test('hash: default and aliases', () => {
-  assert.equal(parseHash('', known).page, 'design');
-  assert.equal(parseHash('#/nonsense', known).page, 'design');
-  assert.equal(parseHash(`#/selection?pick=${COREXY}`, known).page, 'design');
-  assert.equal(parseHash('#/browse', known).page, 'graph');
+test('hash: old page links still read', () => {
+  for (const h of ['', '#/nonsense', '#/design', '#/graph', '#/selection']) {
+    assert.deepEqual(parseHash(h, known), { pick: [], view: null, unknown: [] }, h);
+  }
+  assert.deepEqual(parseHash(`#/design?pick=${COREXY}&view=${HBOT}`, known),
+    { pick: [COREXY], view: HBOT, unknown: [] });
+});
+
+test('hash: obsolete parameters are ignored', () => {
+  assert.deepEqual(parseHash('#/?layout=outline&up=1&down=2', known), { pick: [], view: null, unknown: [] });
+  assert.equal(buildHash({ view: 'x' }), '#/?view=x');
 });
 
 test('hash: legacy browse links read as view', () => {
-  assert.deepEqual(parseHash(`#/browse/${COREXY}`, known), {
-    page: 'graph', pick: [], view: COREXY, up: 3, down: 2, unknown: [],
-  });
+  assert.equal(parseHash(`#/browse/${COREXY}`, known).view, COREXY);
   const b = parseHash(`#/browse/${LEADSCREW}?pick=${COREXY}`, known);
   assert.deepEqual([b.view, b.pick], [LEADSCREW, [COREXY]]);
   assert.equal(parseHash('#/browse/root', known).view, null);
@@ -58,11 +60,8 @@ test('hash: unknown ids are dropped and reported', () => {
   const b = parseHash('#/browse/gantry/doesnotexist', known);
   assert.deepEqual(b.unknown, ['gantry/doesnotexist']);
   assert.equal(b.view, null);
-  const v = parseHash('#/design?view=nope', known);
-  assert.deepEqual([v.view, v.unknown], [null, ['nope']]);
-  const s = parseHash(`#/design?pick=${COREXY},nope`, known);
-  assert.deepEqual(s.pick, [COREXY]);
-  assert.deepEqual(s.unknown, ['nope']);
+  const p = parseHash(`#/?pick=${COREXY},nope`, known);
+  assert.deepEqual([p.pick, p.unknown], [[COREXY], ['nope']]);
 });
 
 test('select: undecided decisions', () => {
@@ -121,108 +120,37 @@ test('brief: prompt has body, missing requirement and undecided decisions', () =
   assert.ok(!prompt.includes('{{') && !prompt.includes('version:'));
 });
 
-import { buildDiagram } from '../viewer/diagram.js';
 
 const subgraph = (src, name) => src.split('\n').slice(src.split('\n').findIndex((l) => l.includes(`["${name}"]`) && l.includes('subgraph')))
   .join('\n').split('  end')[0];
 
-test('diagram: slots become groups', () => {
-  const src = buildDiagram(graph, []);
-  const motion = subgraph(src, 'Motion');
-  for (const t of ['Gantry geometry', 'Drive', 'Linear guide']) assert.ok(motion.includes(t), t);
-  assert.ok(subgraph(src, 'Tool').includes('Pen lift'));
-  assert.ok(subgraph(src, 'Electronics').includes('ontroller'));
-  assert.ok(!src.includes('"Other"'));
-});
-
-test('diagram: decisions without a slot go to Other', () => {
-  const nodes = data.nodes.map((n) => (n.id === id('Drive type') ? { ...n, slot: undefined } : n));
-  const src = buildDiagram({ nodes, byId: new Map(nodes.map((n) => [n.id, n])) }, []);
-  assert.ok(subgraph(src, 'Other').includes('Drive'));
-});
-
-test('diagram: decided and undecided boxes', () => {
-  const src = buildDiagram(graph, [COREXY]);
-  assert.ok(src.includes('CoreXY'));
-  assert.equal(src.split('undecided<').length - 1 + src.split('undecided"').length - 1, 4);
-  assert.match(src, /class d\d(,d\d)+ undecided/);
-});
-
-test('diagram: requirement, missing and conflict edges', () => {
-  const both = buildDiagram(graph, [COREXY, BELT]);
-  assert.match(both, /d\d --> d\d/);
-  assert.ok(!both.includes('needs') && !both.includes('excludes'));
-  const missing = buildDiagram(graph, [COREXY]);
-  assert.match(missing, /d\d -\.->\|"needs GT2 belt[^"]*"\| d\d/);
-  const conflict = buildDiagram(graph, [COREXY, LEADSCREW]);
-  assert.match(conflict, /d\d ---\|"excludes"\| d\d/);
-  assert.match(conflict, /linkStyle \d .*stroke-dasharray/);
-});
-
-test('diagram: titles cannot alter the source', () => {
-  const evil = 'A "q" [b] <script>x</script> | #';
-  const nodes = data.nodes.map((n) => (n.id === COREXY ? { ...n, title: evil } : n));
-  const src = buildDiagram({ nodes, byId: new Map(nodes.map((n) => [n.id, n])) }, [COREXY]);
-  assert.ok(!src.includes('<script>') && !src.includes('A "q"'));
-  assert.ok(src.includes('A #quot;q#quot; #91;b#93; #lt;script#gt;x#lt;/script#gt; #124; #35;'));
-});
-
-import { outlineRows, badges } from '../viewer/outline.js';
-
-test('hash: up and down parse, validate and build', () => {
-  const r = parseHash('#/graph?up=1&down=20', known);
-  assert.deepEqual([r.up, r.down], [1, 20]);
-  for (const bad of ['abc', '-2', '99', '']) {
-    const b = parseHash(`#/graph?up=${bad}&down=${bad}`, known);
-    assert.deepEqual([b.up, b.down], [3, 2], bad);
-  }
-  assert.equal(buildHash('graph', { view: 'x', up: 3, down: 2 }), '#/graph?view=x');
-  assert.equal(buildHash('graph', { view: 'x', up: 1, down: 4 }), '#/graph?view=x&up=1&down=4');
-  assert.equal(buildHash('graph', { pick: ['a'], view: 'x' }), '#/graph?pick=a&view=x');
-});
-
-// Hand-built graph: root > A, B; A > C, D; B > D; C > E > F > G (deep chain); D has two parents.
-function mini(spec) {
-  const nodes = Object.entries(spec).map(([id, parents]) => ({ id, title: id.toUpperCase(), parents, children: [] }));
+test('links: requires keeps direction, symmetric kinds are listed once per pair', () => {
+  const nodes = ['a', 'b'].map((id) => ({ id, children: [], requires: [], excludes: [], compatible_with: [] }));
   const byId = new Map(nodes.map((n) => [n.id, n]));
-  for (const n of nodes) for (const p of n.parents) byId.get(p).children.push(n.id);
-  return { nodes, byId, rootId: 'root' };
-}
-const shape = (rows) => rows.map((r) => (r.kind === 'more' ? `${r.side}+${r.hidden}@${r.level}` : `${r.id}${r.repeat ? '*' : ''}@${r.level}`));
-const g = mini({ root: [], a: ['root'], b: ['root'], c: ['a'], d: ['a', 'b'], e: ['c'], f: ['e'], g: ['f'] });
-
-test('outline: root focus lists descendants and no ancestors', () => {
-  assert.deepEqual(shape(outlineRows(g, 'root')), ['root@0', 'a@1', 'c@2', 'down+3@3', 'd@2', 'b@1', 'd*@2']);
+  byId.get('a').compatible_with.push('b');
+  byId.get('b').compatible_with.push('a');
+  byId.get('a').requires.push('b');
+  byId.get('b').requires.push('a');
+  byId.get('a').excludes.push('b');
+  byId.get('b').excludes.push('a');
+  const links = crossLinks({ nodes, byId });
+  assert.deepEqual(links.map((l) => l.type).sort(), ['compatible_with', 'excludes', 'requires', 'requires']);
 });
 
-test('outline: two parents, first parent adjacent, each with its own ancestors above', () => {
-  assert.deepEqual(shape(outlineRows(g, 'd')), ['root*@2', 'b@1', 'root@2', 'a@1', 'd@0']);
+test('outline: preorder from the root, one row per node, depth 0..2', () => {
+  const root = data.nodes.find((n) => n.type === 'root');
+  const rows = outlineRows({ ...graph, rootId: root.id });
+  assert.equal(rows.length, data.nodes.length);
+  assert.deepEqual([rows[0].id, rows[0].depth], [root.id, 0]);
+  const at = rows.findIndex((r) => r.id === GANTRY);
+  assert.equal(rows[at].depth, 1);
+  assert.deepEqual(rows.slice(at + 1, at + 5).map((r) => r.id), graph.byId.get(GANTRY).children);
+  assert.ok(rows.slice(at + 1, at + 5).every((r) => r.depth === 2));
 });
 
-test('outline: shared node repeated without relatives', () => {
-  const rows = outlineRows(g, 'root', { down: 3 });
-  assert.deepEqual(shape(rows), ['root@0', 'a@1', 'c@2', 'e@3', 'down+2@4', 'd@2', 'b@1', 'd*@2']);
-});
-
-test('outline: depth cut with hidden counts, both sides', () => {
-  assert.deepEqual(shape(outlineRows(g, 'e', { up: 1, down: 1 })), ['up+2@2', 'c@1', 'e@0', 'f@1', 'down+1@2']);
-  assert.deepEqual(shape(outlineRows(g, 'e', { up: 0, down: 0 })), ['up+3@1', 'e@0', 'down+2@1']);
-});
-
-test('outline: no more row when nothing is hidden', () => {
-  const rows = outlineRows(g, 'e', { up: 5, down: 5 });
-  assert.deepEqual(shape(rows), ['root@3', 'a@2', 'c@1', 'e@0', 'f@1', 'g@2']);
-});
-
-test('outline: parent fallback', () => {
-  const legacy = { rootId: 'r', byId: new Map([['r', { id: 'r', children: ['x'] }], ['x', { id: 'x', parent: 'r', children: [] }]]) };
-  assert.deepEqual(shape(outlineRows(legacy, 'x')), ['r@1', 'x@0']);
-});
-
-test('outline: link badges', () => {
-  const gg = { byId: new Map([['t', { title: 'T' }], ['u', { title: 'U' }]]) };
-  assert.deepEqual(badges(gg, { requires: ['t'], excludes: [], compatible_with: ['u'] }), [
-    { kind: 'requires', id: 't', title: 'T' }, { kind: 'compatible with', id: 'u', title: 'U' },
-  ]);
-  assert.deepEqual(badges(gg, {}), []);
+test('outline: shared node repeated once without its children', () => {
+  const nodes = [['root', ['a', 'b']], ['a', ['d']], ['b', ['d']], ['d', ['e']], ['e', []]]
+    .map(([id, children]) => ({ id, children }));
+  const rows = outlineRows({ nodes, byId: new Map(nodes.map((n) => [n.id, n])), rootId: 'root' });
+  assert.deepEqual(rows.map((r) => `${r.id}${r.repeat ? '*' : ''}@${r.depth}`), ['root@0', 'a@1', 'd@2', 'e@3', 'b@1', 'd*@2']);
 });

@@ -90,19 +90,16 @@ npm run build   # refresh graph.json
 npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
 ```
 
-Two pages and a **selection tray** under the header on both (one chip per chosen option with a remove `×`, counts of undecided decisions and problems, **Reset**):
+One full-width page, no tabs:
 
-- **Design** (default): a generated Mermaid block diagram of the selection (decisions grouped by `slot`, each box showing the chosen option or "undecided", solid `requires` edges, red dashed `excludes`, dotted `needs <option>` for missing requirements; click a box to open the decision), then the brief or prompt box, conflicts, required-but-unselected options, undecided decisions and the chosen options with their text. The diagram loads Mermaid from a CDN; offline it shows its source as text and the rest of the page is unaffected.
-- **Graph**: an outline centred on the open node (the root when none), with the open node in the main pane beside it. Ancestors are listed above as a mirrored tree ("Why", the first parent closest), descendants below ("How"). A node reached by several paths is repeated, with its relatives listed only the first time. The outline shows 3 levels up and 2 down; a `+N more` line at the cut keeps the node open and adds two levels. Chosen options are marked ✓, and each line has badges for its `requires`, `excludes` and `compatible with` links.
+- **Top bar**: a compact selection summary. Decisions are grouped by `slot` (decisions without one go to "Other"), one pill each showing the chosen option or `?`; a pill opens its decision. Pills turn red on a conflict and amber on a missing requirement. Counts of picked options, undecided decisions and problems, and **Reset**.
+- **Left panel (graph)**: the whole graph as an indented outline, one fixed-height line per node, indentation encodes depth. A node with several parents is repeated, with its children listed once. Right of the names, three lanes aligned across all lines: **state tags** (`chosen`, `excluded by X`, `undecided`, `needs X`, `needed by X`, `conflict`), a **link lane** where curves join the lines of linked nodes (`requires` with an arrow, `excludes` red dashed, `compatible_with` dotted; faint, lit for the open or hovered line), and a **`?` button** that opens the node. Clicking an option's line **toggles** it (one option per decision; an option excluded by the selection is disabled and names the cause). Clicking a decision opens it.
+- **Right panel (main view)**: the brief or prompt box, conflicts, required-but-unselected options, the chosen options with their text, and undecided decisions.
+- **Node modal** over the page (Esc, `×` or a click outside closes it): text, sources, `requires`/`excludes`/`compatible_with` links, a select/remove button for an option, and for a decision its options with Choose buttons.
 
-Node detail is a **drawer** beside the Design page (Esc or `×` closes it) and the main pane on Graph. It shows the text, sources and `requires`/`excludes`/`compatible_with` links. An option has a select/remove button; a decision lists its options with Choose buttons and shows options excluded by the selection as disabled, naming the cause. The title in the header goes home (`#/design`, empty selection).
+The selection and the open node live in the URL hash, so reload, sharing and the back button work: `#/?pick=<id>,<id>&view=<id>`, e.g. `#/?pick=861c9946,e67a2f12&view=18f0f7e8`. Old forms still open the page: `#/design`, `#/graph`, `#/selection`, and `#/browse/<node-id>` (as `view=<node-id>`).
 
-The page, the selection and the open node live in the URL hash, independently, so reload, sharing and the back button work:
-
-- `#/design?pick=<id>,<id>&view=<id>`, e.g. `#/design?pick=861c9946,e67a2f12&view=18f0f7e8`
-- `#/graph?pick=<id>&view=<id>&up=<0-20>&down=<0-20>`, e.g. `#/graph?view=4fa10308&down=4` (outline depths, defaults 3 and 2, dropped when another node is opened). Old forms still work: `#/selection` is Design, `#/browse[/<node-id>]` is Graph (with `view=<node-id>`).
-
-An optional `slot` field on a node (a non-empty string, e.g. `slot: Motion`) groups decisions into labelled areas of the diagram; decisions without one go to "Other".
+An optional `slot` field on a node (a non-empty string, e.g. `slot: Motion`) groups decisions in the top bar.
 
 Unknown ids in the hash are ignored with a notice.
 
@@ -110,11 +107,11 @@ Unknown ids in the hash are ignored with a notice.
 
 The viewer makes no LLM calls. A written brief for a selection comes from an AI outside the page:
 
-1. Open the Design page for a combination, expand "Prompt for an AI brief" and press "Copy prompt".
+1. Select a combination, expand "Prompt for an AI brief" and press "Copy prompt".
 2. Paste it into any AI and save its answer as a Markdown file, e.g. `brief.md`.
 3. Store it: `npm run brief -- save 861c9946,e67a2f12 brief.md --model <model name>`.
 
-Reload the page: the brief is shown above the summary with the model name.
+Reload the page: the brief is shown at the top of the main view with the model name.
 
 Cache layout: `briefs/<key>.md` (frontmatter `pick`, `content_hash`, `model`, `prompt_version`, `created`, then the Markdown) and `briefs/index.json` mapping each selection key to its file. The key does not depend on the order of the ids. Saving again for the same selection replaces the brief. The prompt template is `prompts/brief.md`.
 

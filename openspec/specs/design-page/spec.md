@@ -1,132 +1,109 @@
 # design-page Specification
 
 ## Purpose
-Gives the viewer three views with separate roles (Graph, Design, Node) and a compact selection tray, and shows the current selection as a generated block diagram on top of its page.
+Gives the viewer one full-width page: a top bar summarizing the selection, a graph panel on the left, the main view of the selection on the right, and the node view as a modal.
 
 ## Requirements
 
 ### Requirement: Views and routes
-The viewer SHALL have a Graph page and a Design page, and the Design page SHALL be the default. The hash SHALL encode the page, the selection (`pick`), the open node (`view`) and, on the Graph page, the outline depths (`up`, `down`) independently. `#/selection` SHALL be read as Design and `#/browse` and `#/browse/<id>` as Graph (with `view=<id>` for the latter, root meaning none). Unknown node ids SHALL be ignored with the existing visible notice.
+The hash SHALL encode the selection (`pick`), the open node (`view`) independently. Old links SHALL still open the page: `#/design`, `#/graph` and `#/selection` as the page, `#/browse` and `#/browse/<id>` with `view=<id>` for the latter (root meaning none). Unknown node ids SHALL be ignored with a visible notice.
 
 #### Scenario: Default
 - **WHEN** the viewer is opened without a hash
-- **THEN** the Design page is shown with an empty selection
+- **THEN** the page is shown with an empty selection and no node open
 
 #### Scenario: Old links
 - **WHEN** the hash is `#/browse/gantry/corexy`
-- **THEN** the Graph page is shown with `gantry/corexy` open
+- **THEN** the page is shown with `gantry/corexy` open in the modal
 
 #### Scenario: Reload keeps state
-- **GIVEN** the Design page with `gantry/corexy` selected and `drive/gt2-belt` open
+- **GIVEN** `gantry/corexy` selected and `drive/gt2-belt` open
 - **WHEN** the page is reloaded
-- **THEN** the same page, selection and open node are shown
+- **THEN** the same selection and open node are shown
 
-### Requirement: Selection tray
-The viewer SHALL show a selection tray on every page instead of a side panel. The tray SHALL show one chip per chosen option (linking to its node, with a remove action), the number of undecided decisions, the number of problems (conflicts and missing requirements) and a Reset button that clears the selection and keeps the page. The tray SHALL contain no list of all options.
+### Requirement: Design page layout
+The main view SHALL show, in order: the cached brief or the prompt box (existing behaviour), the conflicts, the required-but-not-selected nodes with a select action, the chosen options with their bodies and sources, and the undecided decisions. With an empty selection it SHALL show a hint to start choosing in the graph.
 
-#### Scenario: Tray everywhere
-- **WHEN** the user switches between Graph and Design
-- **THEN** the same tray with the same chips is shown
+#### Scenario: Empty selection
+- **WHEN** nothing is selected
+- **THEN** the main view says so and points to the graph
 
-#### Scenario: Remove a chip
-- **GIVEN** `gantry/corexy` and `drive/gt2-belt` are selected
-- **WHEN** the user removes the `CoreXY` chip
-- **THEN** only `drive/gt2-belt` remains selected and the page is unchanged
+#### Scenario: Order
+- **WHEN** `gantry/corexy` and `drive/leadscrew` are selected
+- **THEN** the brief area comes first, then the conflict list
+
+### Requirement: Narrow screens
+On a narrow screen the top bar SHALL wrap, the graph panel and the main view SHALL stack, and the modal SHALL fit the screen width. Nothing except code blocks SHALL scroll horizontally in the page body.
+
+#### Scenario: Phone width
+- **WHEN** the viewport is about 400px wide
+- **THEN** the page body does not scroll horizontally and the panels are stacked
+
+### Requirement: Single page shell
+The viewer SHALL be one full-width page with no tabs: a top bar, a left panel showing the graph, a right panel showing the main view for the selection, and the node view in a modal over the page. The left panel SHALL take about 40% of the width. Each panel SHALL scroll on its own and keep its scroll position when the selection or the open node changes.
+
+#### Scenario: Both panels visible
+- **WHEN** the viewer is opened
+- **THEN** the graph is on the left and the main view on the right, with the top bar above both
+
+#### Scenario: Scroll kept
+- **GIVEN** the main view is scrolled down
+- **WHEN** the user selects an option
+- **THEN** the main view stays at the same scroll position
+
+### Requirement: Top bar
+The top bar SHALL show the decisions grouped by `slot` (decisions without a slot in an `Other` group, last, omitted when empty), one pill per decision with its title and its chosen option or `?` when undecided (dashed). A pill SHALL be marked when its chosen option conflicts with another or requires an unselected node. Activating a pill SHALL open that decision in the node view. The bar SHALL also show the number of picked options, undecided decisions and problems (conflicts and missing requirements), and a Reset button, shown only when something is selected, that clears the selection and keeps the open node.
+
+#### Scenario: Slots as groups
+- **WHEN** the page is shown
+- **THEN** `Motion` groups the gantry, drive and linear guide pills, `Tool` the pen lift, `Electronics` the controller
+
+#### Scenario: Decided and undecided
+- **WHEN** only `gantry/corexy` is selected
+- **THEN** the gantry pill shows `CoreXY` and the other four pills show `?`
 
 #### Scenario: Counts
 - **WHEN** only `gantry/corexy` is selected
-- **THEN** the tray shows 4 undecided decisions and 1 problem (missing `drive/gt2-belt`)
+- **THEN** the bar shows 1 picked, 4 undecided and 1 problem
 
 #### Scenario: Reset
-- **GIVEN** options are selected on the Graph page
+- **GIVEN** options are selected
 - **WHEN** the user presses Reset
-- **THEN** the selection is empty and the Graph page is still shown
+- **THEN** the selection is empty
 
-### Requirement: Choosing options
-An option SHALL be chosen or unchosen from the option's node view and from its decision's node view. A decision's node view SHALL list its options with a choose action each, at most one option per decision, and SHALL show options excluded by the current selection as disabled, naming the selected option responsible. The Graph outline SHALL mark chosen options. Decision and other non-option nodes SHALL show no choose action for themselves.
+### Requirement: Click to choose options
+Clicking an option's line in the graph SHALL toggle its selection, with at most one option per decision. An option excluded by the current selection and not chosen SHALL NOT toggle and SHALL be shown disabled, with the selected option responsible named. A chosen option SHALL always be removable. An option SHALL also be chosen or unchosen from its own node view and from its decision's node view, which lists its options with a choose action each. Decisions and the root SHALL have no selection toggle.
 
-#### Scenario: Choose from the decision
-- **WHEN** the user opens `gantry` and chooses `CoreXY`
-- **THEN** `gantry/corexy` is selected and the tray shows its chip
+#### Scenario: Click to choose
+- **WHEN** the user clicks the `CoreXY` line
+- **THEN** `gantry/corexy` is selected and its line is marked chosen
 
 #### Scenario: One per decision
 - **GIVEN** `gantry/corexy` is selected
-- **WHEN** the user chooses `gantry/h-bot` from the `gantry` view
+- **WHEN** the user clicks the `H-bot` line
 - **THEN** `gantry/h-bot` replaces `gantry/corexy`
 
-#### Scenario: Exclusion shown
+#### Scenario: Excluded option
 - **GIVEN** `gantry/corexy` is selected
-- **WHEN** the user opens `drive`
-- **THEN** `Leadscrew` is shown disabled with `CoreXY` named as the cause
+- **WHEN** the user clicks the `Leadscrew` line
+- **THEN** the selection is unchanged and the line shows `CoreXY` as the cause
 
-### Requirement: Node view placement
-Opening a node on the Design page SHALL show it in a side drawer next to the page, which stays visible and unchanged. Opening a node on the Graph page SHALL show it in the main pane beside the outline, with no overlay. The node view SHALL show title, type, confidence, body as Markdown, sources, links for `requires`, `excludes` and `compatible_with`, and for an option the choose action. Following an edge link SHALL show that node in the same place. No modal SHALL be used.
+#### Scenario: Choose from the decision
+- **WHEN** the user opens `gantry` and chooses `CoreXY`
+- **THEN** `gantry/corexy` is selected
 
-#### Scenario: Drawer on Design
-- **WHEN** the user activates a chip or a diagram box on the Design page
-- **THEN** a drawer shows that node and the Design page stays rendered beside it
+### Requirement: Node modal
+The node view SHALL open as a modal over the page, which stays rendered underneath. It SHALL open from the `(?)` icon of any line in the graph, from a top-bar pill, from a decision line, and from links in the main view. It SHALL show title, type, confidence, body as Markdown, sources, links for `requires`, `excludes` and `compatible_with`, and for an option the choose action. Following an edge link SHALL show that node in the same modal. Esc, the close button or a click outside the dialog SHALL close it without changing the selection.
 
-#### Scenario: Close the drawer
-- **WHEN** the user presses Esc or the close button of the drawer
-- **THEN** the drawer is closed and the selection is unchanged
+#### Scenario: Open from the icon
+- **WHEN** the user clicks the `(?)` of the `Leadscrew` line
+- **THEN** a modal shows `drive/leadscrew` and the selection is unchanged
 
-#### Scenario: Main pane on Graph
-- **WHEN** the user activates `Leadscrew` in the Graph outline
-- **THEN** the main pane shows `drive/leadscrew` beside the outline and nothing overlays the page
+#### Scenario: Close
+- **WHEN** the user presses Esc, the × or the backdrop
+- **THEN** the modal closes and the selection is unchanged
 
 #### Scenario: Follow an edge
 - **GIVEN** `gantry/corexy` is shown
 - **WHEN** the user follows the `drive/gt2-belt` link
-- **THEN** `drive/gt2-belt` is shown in the same place
-
-### Requirement: Design page layout
-The Design page SHALL show, in order: the block diagram, the cached brief or the prompt box (existing behaviour), the conflicts, the required-but-not-selected nodes with a select action, the undecided decisions, and the chosen options with their bodies and sources. With an empty selection it SHALL still show the diagram, with every decision undecided.
-
-#### Scenario: Empty selection
-- **WHEN** nothing is selected
-- **THEN** the diagram shows every decision as undecided and the page points to the Graph page or the diagram to start choosing
-
-#### Scenario: Order
-- **WHEN** `gantry/corexy` and `drive/leadscrew` are selected
-- **THEN** the diagram comes first and the conflict list comes after the brief area
-
-### Requirement: Block diagram
-The Design page SHALL render a Mermaid block diagram generated from the graph and the selection, with no stored diagram. Each decision SHALL be one box, grouped into one labelled subgraph per `slot` (decisions without a slot in an `Other` group, omitted when empty). A decided box SHALL show the decision title and the chosen option title; an undecided box SHALL show the title and "undecided" with a dashed style. A `requires` edge between two chosen options SHALL be drawn solid between their decisions; a conflict SHALL be drawn as a distinct dashed edge labelled `excludes`; a required node that is not selected SHALL be drawn as a dotted edge to its decision labelled `needs <title>`. Activating a box SHALL open that decision in the node view. Node text SHALL be escaped so titles cannot alter the diagram or inject HTML.
-
-#### Scenario: Slots as groups
-- **WHEN** the Design page is shown
-- **THEN** `Motion` contains the gantry, drive and linear guide boxes, `Tool` the pen lift, `Electronics` the controller
-
-#### Scenario: Decided and undecided
-- **WHEN** only `gantry/corexy` is selected
-- **THEN** the gantry box shows `CoreXY` and the other four boxes show `undecided`
-
-#### Scenario: Requirement edge
-- **WHEN** `gantry/corexy` and `drive/gt2-belt` are selected
-- **THEN** a solid edge links the gantry box to the drive box
-
-#### Scenario: Missing requirement
-- **WHEN** only `gantry/corexy` is selected
-- **THEN** a dotted edge labelled `needs GT2 belt` points to the drive box
-
-#### Scenario: Conflict edge
-- **WHEN** `gantry/corexy` and `drive/leadscrew` are selected
-- **THEN** a dashed `excludes` edge links the two boxes
-
-#### Scenario: Escaping
-- **WHEN** a node title contains quotes, brackets or `<script>`
-- **THEN** the diagram source stays valid and the text is shown literally
-
-### Requirement: Diagram fallback
-If Mermaid cannot be loaded or rendering fails, the Design page SHALL show the diagram source as preformatted text with a short notice, and the rest of the page SHALL render normally.
-
-#### Scenario: Offline
-- **WHEN** the Mermaid script cannot be loaded
-- **THEN** the source is shown as text and the brief, lists and chosen options are still shown
-
-### Requirement: Narrow screens
-On a narrow screen the tray SHALL wrap, the Graph outline and its main pane SHALL stack, and the drawer SHALL cover the width of the screen with a close button. Nothing except the diagram and code blocks SHALL scroll horizontally, and a long outline line SHALL wrap instead of widening the page.
-
-#### Scenario: Phone width
-- **WHEN** the viewport is about 400px wide
-- **THEN** the page body does not scroll horizontally and the diagram scrolls inside its own container
+- **THEN** `drive/gt2-belt` is shown in the same modal

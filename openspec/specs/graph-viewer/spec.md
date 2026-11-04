@@ -10,51 +10,26 @@ The viewer SHALL be plain static files that load `graph.json` over HTTP and need
 
 #### Scenario: Graph loads
 - **WHEN** the page is opened from a static server next to a valid `graph.json`
-- **THEN** the Graph page shows the root node and its decisions
+- **THEN** the graph panel shows the root node and its decisions
 
 #### Scenario: Graph missing
 - **WHEN** `graph.json` returns an error or invalid JSON
 - **THEN** the page shows a message naming the problem
 
 ### Requirement: Browse view
-The Graph page SHALL show the hierarchy as an outline centred on the open node (the root when none is open), and, beside it, a main pane for the open node with title, type, confidence, the body rendered as Markdown, the sources, and its `requires`, `excludes` and `compatible_with` edges as links that open the target node. Activating a line of the outline SHALL open that node and recentre the outline on it.
+The left panel SHALL show the whole hierarchy, one line per node, with the open node highlighted. The open node's detail (title, type, confidence, body as Markdown, sources, and its `requires`, `excludes` and `compatible_with` edges as links that open the target node) SHALL be shown in the node modal.
 
 #### Scenario: Open a node
-- **WHEN** the user activates the CoreXY line in the outline
-- **THEN** the main pane shows its title, rendered body, sources, and links to the belt option it requires and the leadscrew option it excludes, and the outline is centred on it
+- **WHEN** the user opens the CoreXY node
+- **THEN** the modal shows its title, rendered body, sources, and links to the belt option it requires and the leadscrew option it excludes, and its line is highlighted
 
 #### Scenario: Follow an edge
-- **WHEN** the user clicks the link to the belt option in the main pane
-- **THEN** that node becomes the open node and the outline is centred on it
+- **WHEN** the user clicks the link to the belt option in the modal
+- **THEN** that node becomes the open node
 
 #### Scenario: Body is not executed as HTML
 - **WHEN** a node body contains HTML tags
 - **THEN** they are shown as text, not interpreted
-
-### Requirement: Views are addressable
-The current page, the open node, the current selection and, on the Graph page, the outline depths SHALL be encoded in the URL hash, so that reloading the page or sharing the URL restores the same view. Opening another node SHALL reset the depths to their defaults. Unknown node ids in the hash SHALL be ignored with a visible notice, and invalid depths SHALL fall back to the defaults.
-
-#### Scenario: Reload restores state
-- **GIVEN** the Design page with the CoreXY option selected
-- **WHEN** the page is reloaded
-- **THEN** the same page and selection are shown
-
-#### Scenario: Unknown id
-- **WHEN** the hash refers to `gantry/doesnotexist`
-- **THEN** the page shows a notice and still renders the rest of the view
-
-#### Scenario: Depths in the hash
-- **WHEN** the Graph page is opened with `up=1&down=3`
-- **THEN** the outline shows one level above and three levels below the open node
-
-#### Scenario: Depths reset on navigation
-- **GIVEN** the Graph page was opened with `down=4`
-- **WHEN** the user activates another line of the outline
-- **THEN** the new hash has no `down` and the default depth applies
-
-#### Scenario: Invalid depth
-- **WHEN** the hash has `down=abc` or `up=-2`
-- **THEN** the defaults apply and the page renders normally
 
 ### Requirement: Local serving
 The repository SHALL provide a single command that serves the viewer and `graph.json` locally.
@@ -63,60 +38,72 @@ The repository SHALL provide a single command that serves the viewer and `graph.
 - **WHEN** the serve command is run
 - **THEN** it prints a local URL at which the viewer loads the current `graph.json`
 
-### Requirement: Outline rows
-The outline SHALL list the nodes above the open node as a mirrored tree (parents closest to it, their parents above them), then the open node, then its descendants as a tree, one node per line, each line indented by its distance from the open node. Parents SHALL be ordered with the first parent closest to the open node, and children by title.
-
-#### Scenario: Two parents
-- **GIVEN** a node with two parents, each with a parent of its own
-- **WHEN** it is the open node
-- **THEN** both parents are lines above it, each with its own parent listed above it, and the first parent is the line directly above the open node
-
-#### Scenario: Root as the focus
-- **WHEN** no node is open
-- **THEN** the outline starts at the root, has no lines above it and lists the decisions below it
-
 ### Requirement: Outline repeats and marks
-A node reached by several paths SHALL appear on each path, and from its second appearance on its relatives SHALL NOT be listed again and the line SHALL be marked as a repeat. A chosen option SHALL be marked on its line.
+A node reached by several parents SHALL appear under each, and from its second appearance on its children SHALL NOT be listed again and the line SHALL be marked as a repeat. Chosen, excluded, undecided, conflicting and needed nodes SHALL be marked on their lines.
 
 #### Scenario: Shared node repeated
-- **GIVEN** a node that is a child of two decisions, both below the open node
-- **WHEN** the outline is shown
-- **THEN** the node appears under both decisions, its own children are listed under the first only, and the second line is marked as a repeat
+- **GIVEN** a node that is a child of two decisions
+- **WHEN** the graph is shown
+- **THEN** the node appears under both, its own children are listed under the first only, and the second line is marked as a repeat
 
 #### Scenario: Chosen option marked
 - **GIVEN** the CoreXY option is selected
-- **WHEN** it is visible in the outline
+- **WHEN** it is visible in the graph
 - **THEN** its line is marked as chosen
 
-### Requirement: Outline depth cut
-The outline SHALL show at most `up` levels above and `down` levels below the open node, 3 and 2 by default. Where nodes are cut, the line at the cut SHALL say how many nodes are hidden and, when activated, SHALL keep the open node and add two levels in that direction.
+### Requirement: Addressable view
+The open node and the current selection SHALL be encoded in the URL hash, so that reloading the page or sharing the URL restores the same view. Unknown node ids in the hash SHALL be ignored with a visible notice. Obsolete parameters (`up`, `down`, `layout`) SHALL be ignored.
 
-#### Scenario: Default cut
-- **GIVEN** a node with descendants five levels deep
-- **WHEN** it is the open node
-- **THEN** descendants down to level two are shown, and the last lines say how many more are hidden
+#### Scenario: Reload restores state
+- **GIVEN** the CoreXY option selected and the Leadscrew node open
+- **WHEN** the page is reloaded
+- **THEN** the same selection and open node are shown
 
-#### Scenario: Show more
-- **WHEN** the user activates the hidden-descendants line
-- **THEN** the same node stays open, `down` is two higher in the hash, and two more levels are shown
+#### Scenario: Unknown id
+- **WHEN** the hash refers to `gantry/doesnotexist`
+- **THEN** the page shows a notice and still renders the rest of the view
 
-#### Scenario: Cut ancestors
-- **GIVEN** a node with ancestors five levels up
-- **WHEN** it is the open node
-- **THEN** only three levels above are shown, with a line at the top saying how many more are hidden
+#### Scenario: Obsolete parameters
+- **WHEN** the hash has `up=1&down=3&layout=outline`
+- **THEN** the page renders normally
 
-#### Scenario: Nothing hidden
-- **WHEN** the open node has no nodes beyond the shown levels
-- **THEN** no hidden-nodes line is shown
+### Requirement: Outline layout
+The graph SHALL be listed as a preorder tree from the root, one node per line, each line indented by its depth, children in the order of the node's `children`. Every line SHALL have the same height. Right of the names, three lanes SHALL be aligned vertically across all lines: state tags, links, and the `(?)` button.
 
-### Requirement: Outline link badges
-Each outline line whose node has `requires`, `excludes` or `compatible_with` links SHALL show a badge per link with its kind and target title, and activating a badge SHALL open the target node. Badges SHALL NOT change the order or indentation of lines.
+#### Scenario: Order and indentation
+- **WHEN** the graph is shown
+- **THEN** the root is first, each decision follows at depth 1, and its options follow it at depth 2
 
-#### Scenario: Excludes badge
-- **GIVEN** the CoreXY option excludes the leadscrew option
-- **WHEN** the CoreXY line is in the outline
-- **THEN** it shows an `excludes` badge with the leadscrew title, and activating it opens the leadscrew node
+#### Scenario: Aligned lanes
+- **WHEN** lines of different depths are shown
+- **THEN** their tags, link ends and `(?)` buttons share the same horizontal positions
 
-#### Scenario: No links
-- **WHEN** a node has no `requires`, `excludes` or `compatible_with` links
-- **THEN** its line has no badge
+### Requirement: State tags
+Each line SHALL show tags for its state in the tags lane: `chosen`, `excluded by <title>`, `undecided` (decisions), `needs <title>` (a selected node whose requirement is missing) and `needed by <title>` (the missing node itself) and `conflict`. A line with no state SHALL show no tag.
+
+#### Scenario: Chosen and excluded
+- **GIVEN** `gantry/corexy` is selected
+- **WHEN** the graph is shown
+- **THEN** the CoreXY line has a `chosen` tag and the Leadscrew line has an `excluded by CoreXY` tag
+
+#### Scenario: Undecided
+- **WHEN** nothing is selected
+- **THEN** every decision line has an `undecided` tag
+
+### Requirement: Link lane
+The link lane SHALL draw `requires` (arrow), `excludes` (red, dashed) and `compatible_with` (dotted) links as SVG curves joining the lines of the two nodes, one curve per pair for `excludes` and `compatible_with`. Curves SHALL be faint, and emphasized when they touch the open node or the hovered line.
+
+#### Scenario: Link between rows
+- **WHEN** the CoreXY option requires the belt option
+- **THEN** a curve with an arrow joins the CoreXY line to the belt line in the link lane
+
+#### Scenario: Emphasis
+- **WHEN** the user hovers the `CoreXY` line
+- **THEN** its `requires` and `excludes` curves are emphasized and the others stay faint
+
+### Requirement: Row actions
+Every line SHALL have a `(?)` button, in its lane, that opens the node's modal. Clicking the rest of an option's line SHALL toggle its selection (see `design-page`); clicking a decision's or the root's line SHALL open its modal.
+
+#### Scenario: Button opens, line toggles
+- **WHEN** the user clicks the `(?)` of `CoreXY`, then closes the modal and clicks the `CoreXY` line
+- **THEN** the first click only opened the modal and the second selected the option
