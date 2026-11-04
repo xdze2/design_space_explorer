@@ -1,39 +1,102 @@
 {"from":"018d772f","to":"5249fcf9","type":"compatible_with","src":"LLM:claude-sonnet","hint":"Second synchronized Y motor compatible_with FluidNC on ESP32"}
+{"from":"d4ddcf72","to":"dcefc61b","type":"compatible_with","src":"LLM:claude-opus-5-5","hint":"EiBotBoard with the AxiDraw software compatible_with Servo pen lift"}
 {"from":"dcefc61b","to":"5249fcf9","type":"compatible_with","src":"LLM:claude-sonnet","hint":"Servo pen lift compatible_with FluidNC on ESP32"}
+{"from":"0e78dd37","to":"09d91f08","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing tool constrains Set the pen pressure"}
+{"from":"0e78dd37","to":"2798fd6f","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing tool constrains Lift and lower the pen"}
+{"from":"0e78dd37","to":"f42dc3f6","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing tool constrains Change pens"}
+{"from":"18882c3f","to":"7279c5e2","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Repeatability constrains Drive the axes"}
+{"from":"18882c3f","to":"b6e812c9","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Repeatability constrains Guide the axes"}
+{"from":"18882c3f","to":"f42dc3f6","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Repeatability constrains Change pens"}
 {"from":"2cc55003","to":"854ac5e5","type":"constrains","src":"LLM:claude-sonnet","hint":"Paper format constrains Move the pen in XY"}
 {"from":"2cc55003","to":"b6e812c9","type":"constrains","src":"LLM:claude-sonnet","hint":"Paper format constrains Guide the axes"}
 {"from":"46e36bf8","to":"2798fd6f","type":"constrains","src":"LLM:claude-sonnet","hint":"Line quality constrains Lift and lower the pen"}
 {"from":"46e36bf8","to":"b6e812c9","type":"constrains","src":"LLM:claude-sonnet","hint":"Line quality constrains Guide the axes"}
-{"from":"9dbd19bc","to":"55269563","type":"constrains","src":"LLM:claude-sonnet","hint":"Budget constrains Draw a design on paper with a pen"}
+{"from":"9dbd19bc","to":"55269563","type":"constrains","src":"LLM:claude-sonnet","hint":"Budget constrains Draw a design with a pen or brush"}
+{"from":"d0784b3e","to":"2798fd6f","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing speed constrains Lift and lower the pen"}
+{"from":"d0784b3e","to":"7279c5e2","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing speed constrains Drive the axes"}
+{"from":"d0784b3e","to":"854ac5e5","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing speed constrains Move the pen in XY"}
+{"from":"f5828b1c","to":"09d91f08","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing media constrains Set the pen pressure"}
+{"from":"f5828b1c","to":"20449e2e","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing media constrains Hold the drawing surface"}
+{"from":"f5828b1c","to":"854ac5e5","type":"constrains","src":"LLM:claude-opus-5-5","hint":"Drawing media constrains Move the pen in XY"}
+{"from":"0800f202","to":"5f53f3a8","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Hobby servos excludes Leadscrew drive"}
+{"from":"0800f202","to":"9b55d6fc","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Hobby servos excludes GT2 belt drive"}
 {"from":"1f4df7b0","to":"5f53f3a8","type":"excludes","src":"LLM:claude-sonnet","hint":"CoreXY excludes Leadscrew drive"}
+{"from":"328cfb43","to":"5f53f3a8","type":"excludes","src":"LLM:claude-opus-5-5","hint":"H-bot excludes Leadscrew drive"}
 {"from":"55904a34","to":"c7102c51","type":"excludes","src":"LLM:claude-sonnet","hint":"Solenoid pen lift excludes GRBL on Arduino Uno with CNC shield"}
 {"from":"5f53f3a8","to":"a316aecc","type":"excludes","src":"LLM:claude-sonnet","hint":"Leadscrew drive excludes Single-rail cantilever"}
-{"from":"1f4df7b0","to":"6d52ba8e","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"CoreXY > Transmit motor motion"}
-{"from":"1f4df7b0","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"CoreXY > Guide the axes"}
-{"from":"2798fd6f","to":"55904a34","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Lift and lower the pen > Solenoid pen lift"}
+{"from":"749d3565","to":"f01d277b","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Frame mounted on a wall excludes Pen weight on a free slide"}
+{"from":"bb0b672f","to":"5f53f3a8","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Hanging polargraph excludes Leadscrew drive"}
+{"from":"bb0b672f","to":"f01d277b","type":"excludes","src":"LLM:claude-opus-5-5","hint":"Hanging polargraph excludes Pen weight on a free slide"}
+{"from":"d4ddcf72","to":"c9ca31d8","type":"excludes","src":"LLM:claude-opus-5-5","hint":"EiBotBoard with the AxiDraw software excludes Z-axis stepper lift"}
+{"from":"09d91f08","to":"65317df5","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Set the pen pressure > Rigid holder, depth set by the lift"}
+{"from":"09d91f08","to":"d1dbee31","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Set the pen pressure > Spring against a hard stop"}
+{"from":"09d91f08","to":"f01d277b","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Set the pen pressure > Pen weight on a free slide"}
+{"from":"19109b12","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Grit-wheel paper feed > Drive the axes"}
+{"from":"19109b12","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Grit-wheel paper feed > Guide the axes"}
+{"from":"1f4df7b0","to":"20449e2e","type":"how","order":4,"src":"LLM:claude-opus-5-5","hint":"CoreXY > Hold the drawing surface"}
+{"from":"1f4df7b0","to":"6d52ba8e","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"CoreXY > Transmit motor motion"}
+{"from":"1f4df7b0","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"CoreXY > Drive the axes"}
+{"from":"1f4df7b0","to":"b6e812c9","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"CoreXY > Guide the axes"}
+{"from":"20449e2e","to":"749d3565","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Hold the drawing surface > Frame mounted on a wall"}
+{"from":"20449e2e","to":"7c43b5d5","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Hold the drawing surface > Bed board with clips or magnets"}
+{"from":"20449e2e","to":"b1d14f50","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Hold the drawing surface > Open frame set over the media"}
+{"from":"2798fd6f","to":"55904a34","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Lift and lower the pen > Solenoid pen lift"}
+{"from":"2798fd6f","to":"c9ca31d8","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Lift and lower the pen > Z-axis stepper lift"}
 {"from":"2798fd6f","to":"dcefc61b","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Lift and lower the pen > Servo pen lift"}
-{"from":"2e099434","to":"48664224","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Keep the gantry square"}
-{"from":"2e099434","to":"6d52ba8e","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Transmit motor motion"}
-{"from":"2e099434","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Guide the axes"}
+{"from":"2798fd6f","to":"fba1701e","type":"how","order":4,"src":"LLM:claude-opus-5-5","hint":"Lift and lower the pen > Voice coil pen actuator"}
+{"from":"2e099434","to":"20449e2e","type":"how","order":5,"src":"LLM:claude-opus-5-5","hint":"Cartesian, two Y rails > Hold the drawing surface"}
+{"from":"2e099434","to":"48664224","type":"how","order":4,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Keep the gantry square"}
+{"from":"2e099434","to":"6d52ba8e","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Transmit motor motion"}
+{"from":"2e099434","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Cartesian, two Y rails > Drive the axes"}
+{"from":"2e099434","to":"b6e812c9","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Cartesian, two Y rails > Guide the axes"}
+{"from":"328cfb43","to":"20449e2e","type":"how","order":4,"src":"LLM:claude-opus-5-5","hint":"H-bot > Hold the drawing surface"}
+{"from":"328cfb43","to":"6d52ba8e","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"H-bot > Transmit motor motion"}
+{"from":"328cfb43","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"H-bot > Drive the axes"}
+{"from":"328cfb43","to":"b6e812c9","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"H-bot > Guide the axes"}
 {"from":"48664224","to":"018d772f","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Keep the gantry square > Second synchronized Y motor"}
 {"from":"48664224","to":"1203960b","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Keep the gantry square > Stiff cross rod"}
-{"from":"55269563","to":"2798fd6f","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Draw a design on paper with a pen > Lift and lower the pen"}
-{"from":"55269563","to":"854ac5e5","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Draw a design on paper with a pen > Move the pen in XY"}
-{"from":"55269563","to":"a2651c78","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Draw a design on paper with a pen > Turn G-code into motion"}
+{"from":"55269563","to":"2798fd6f","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Draw a design with a pen or brush > Lift and lower the pen"}
+{"from":"55269563","to":"854ac5e5","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Draw a design with a pen or brush > Move the pen in XY"}
+{"from":"55269563","to":"a2651c78","type":"how","order":4,"src":"LLM:claude-sonnet","hint":"Draw a design with a pen or brush > Turn drawing commands into motion"}
+{"from":"55269563","to":"f42dc3f6","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Draw a design with a pen or brush > Change pens"}
+{"from":"55904a34","to":"09d91f08","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Solenoid pen lift > Set the pen pressure"}
 {"from":"6d52ba8e","to":"5f53f3a8","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Transmit motor motion > Leadscrew drive"}
 {"from":"6d52ba8e","to":"9b55d6fc","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Transmit motor motion > GT2 belt drive"}
+{"from":"7279c5e2","to":"0800f202","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Drive the axes > Hobby servos"}
+{"from":"7279c5e2","to":"1dbdf725","type":"how","order":4,"src":"LLM:claude-opus-5-5","hint":"Drive the axes > DC motors with encoders"}
+{"from":"7279c5e2","to":"37a033a3","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Drive the axes > Geared 28BYJ-48 steppers"}
+{"from":"7279c5e2","to":"ddbfc16b","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Drive the axes > NEMA 17 steppers"}
+{"from":"854ac5e5","to":"19109b12","type":"how","order":7,"src":"LLM:claude-opus-5-5","hint":"Move the pen in XY > Grit-wheel paper feed"}
 {"from":"854ac5e5","to":"1f4df7b0","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > CoreXY"}
 {"from":"854ac5e5","to":"2e099434","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > Cartesian, two Y rails"}
-{"from":"854ac5e5","to":"a316aecc","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > Single-rail cantilever"}
+{"from":"854ac5e5","to":"328cfb43","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Move the pen in XY > H-bot"}
+{"from":"854ac5e5","to":"9b7ac8ab","type":"how","order":6,"src":"LLM:claude-opus-5-5","hint":"Move the pen in XY > Five-bar arm (SCARA)"}
+{"from":"854ac5e5","to":"a316aecc","type":"how","order":4,"src":"LLM:claude-sonnet","hint":"Move the pen in XY > Single-rail cantilever"}
+{"from":"854ac5e5","to":"bb0b672f","type":"how","order":5,"src":"LLM:claude-opus-5-5","hint":"Move the pen in XY > Hanging polargraph"}
 {"from":"9b55d6fc","to":"55687554","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"GT2 belt drive > GT2 pulleys and idlers"}
 {"from":"9b55d6fc","to":"7e4b293b","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"GT2 belt drive > GT2 belt (reinforced core)"}
-{"from":"a2651c78","to":"5249fcf9","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Turn G-code into motion > FluidNC on ESP32"}
-{"from":"a2651c78","to":"c7102c51","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Turn G-code into motion > GRBL on Arduino Uno with CNC shield"}
-{"from":"a316aecc","to":"6d52ba8e","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Single-rail cantilever > Transmit motor motion"}
-{"from":"a316aecc","to":"b6e812c9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Single-rail cantilever > Guide the axes"}
+{"from":"9b7ac8ab","to":"20449e2e","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Five-bar arm (SCARA) > Hold the drawing surface"}
+{"from":"9b7ac8ab","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Five-bar arm (SCARA) > Drive the axes"}
+{"from":"a2651c78","to":"5249fcf9","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Turn drawing commands into motion > FluidNC on ESP32"}
+{"from":"a2651c78","to":"c7102c51","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Turn drawing commands into motion > GRBL on Arduino Uno with CNC shield"}
+{"from":"a2651c78","to":"d4ddcf72","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Turn drawing commands into motion > EiBotBoard with the AxiDraw software"}
+{"from":"a316aecc","to":"20449e2e","type":"how","order":4,"src":"LLM:claude-opus-5-5","hint":"Single-rail cantilever > Hold the drawing surface"}
+{"from":"a316aecc","to":"6d52ba8e","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Single-rail cantilever > Transmit motor motion"}
+{"from":"a316aecc","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Single-rail cantilever > Drive the axes"}
+{"from":"a316aecc","to":"b6e812c9","type":"how","order":3,"src":"LLM:claude-sonnet","hint":"Single-rail cantilever > Guide the axes"}
 {"from":"b6e812c9","to":"3bd9d7e2","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Guide the axes > V-slot wheels on aluminium extrusion"}
 {"from":"b6e812c9","to":"3c12da47","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Guide the axes > Linear rails and bearing blocks"}
-{"from":"dcefc61b","to":"378780c6","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Servo pen lift > Spring-loaded 3D-printed pen holder"}
-{"from":"dcefc61b","to":"ce557edc","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Servo pen lift > Micro servo"}
+{"from":"bb0b672f","to":"6d52ba8e","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Hanging polargraph > Transmit motor motion"}
+{"from":"bb0b672f","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Hanging polargraph > Drive the axes"}
+{"from":"c9ca31d8","to":"09d91f08","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Z-axis stepper lift > Set the pen pressure"}
+{"from":"d1dbee31","to":"378780c6","type":"how","src":"LLM:claude-opus-5-5","hint":"Spring against a hard stop > Spring-loaded 3D-printed pen holder"}
+{"from":"dcefc61b","to":"09d91f08","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Servo pen lift > Set the pen pressure"}
+{"from":"dcefc61b","to":"ce557edc","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Servo pen lift > Micro servo"}
+{"from":"f42dc3f6","to":"565c46d1","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"Change pens > Pen rack and gripper"}
+{"from":"f42dc3f6","to":"5cd4d3d5","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"Change pens > Several pens on the carriage"}
+{"from":"f42dc3f6","to":"a09bf72f","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"Change pens > Manual swap at a pause"}
 {"from":"1203960b","to":"9b55d6fc","type":"requires","src":"LLM:claude-sonnet","hint":"Stiff cross rod requires GT2 belt drive"}
 {"from":"1f4df7b0","to":"9b55d6fc","type":"requires","src":"LLM:claude-sonnet","hint":"CoreXY requires GT2 belt drive"}
+{"from":"328cfb43","to":"9b55d6fc","type":"requires","src":"LLM:claude-opus-5-5","hint":"H-bot requires GT2 belt drive"}
+{"from":"565c46d1","to":"c9ca31d8","type":"requires","src":"LLM:claude-opus-5-5","hint":"Pen rack and gripper requires Z-axis stepper lift"}
+{"from":"65317df5","to":"c9ca31d8","type":"requires","src":"LLM:claude-opus-5-5","hint":"Rigid holder, depth set by the lift requires Z-axis stepper lift"}

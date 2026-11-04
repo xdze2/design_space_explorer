@@ -12,7 +12,7 @@ const graph = { nodes: data.nodes, byId: new Map(data.nodes.map((n) => [n.id, n]
 const id = idByTitle(data.nodes);
 const MOVE = id('Move the pen in XY');
 const LIFT = id('Lift and lower the pen');
-const GCODE = id('Turn G-code into motion');
+const GCODE = id('Turn drawing commands into motion');
 const TRANSMIT = id('Transmit motor motion');
 const GUIDE = id('Guide the axes');
 const SQUARE = id('Keep the gantry square');
@@ -27,6 +27,9 @@ const GRBL = id('GRBL on Arduino Uno with CNC shield');
 const PAPER = id('Paper format');
 const ROD = id('Stiff cross rod');
 const SERVO = id('Servo pen lift');
+const CHANGE = id('Change pens');
+const DRIVE = id('Drive the axes');
+const HOLD = id('Hold the drawing surface');
 
 const fresh = () => emptyDesign();
 const withCorexy = () => choose(graph, fresh(), MOVE, COREXY);
@@ -41,7 +44,8 @@ test('design: a new design has no entries and an unknown function reads as open'
 });
 
 test('design: decisions are the functions whose how targets are solutions', () => {
-  const titles = ['Move the pen in XY', 'Keep the gantry square', 'Transmit motor motion', 'Guide the axes', 'Lift and lower the pen', 'Turn G-code into motion'];
+  const titles = ['Move the pen in XY', 'Keep the gantry square', 'Transmit motor motion', 'Guide the axes', 'Lift and lower the pen', 'Turn drawing commands into motion',
+    'Drive the axes', 'Hold the drawing surface', 'Set the pen pressure', 'Change pens'];
   assert.deepEqual(decisions(graph).map((n) => n.id).sort(), titles.map(id).sort());
 });
 
@@ -217,9 +221,9 @@ test('analysis: counts on the demo graph with only CoreXY chosen', () => {
   const a = analyzeDesign(graph, withCorexy());
   assert.equal(a.problems, 1);
   assert.deepEqual([...a.required.keys()], [BELT]);
-  assert.deepEqual([...a.undecided].sort(), [LIFT, GCODE, TRANSMIT, GUIDE].sort());
+  assert.deepEqual([...a.undecided].sort(), [LIFT, CHANGE, GCODE, DRIVE, TRANSMIT, GUIDE, HOLD].sort());
   const empty = analyzeDesign(graph, fresh());
-  assert.deepEqual([...empty.undecided].sort(), [MOVE, LIFT, GCODE].sort());
+  assert.deepEqual([...empty.undecided].sort(), [MOVE, LIFT, CHANGE, GCODE].sort());
   assert.equal(empty.problems, 0);
 });
 
@@ -237,7 +241,7 @@ test('what-if: a conflict, and a requirement it would add', () => {
   assert.deepEqual(w.conflicts, [COREXY]);
   const r = whatIf(graph, fresh(), COREXY);
   assert.deepEqual(r.added, [BELT]);
-  assert.deepEqual(r.activated.sort(), [TRANSMIT, GUIDE].sort());
+  assert.deepEqual(r.activated.sort(), [DRIVE, TRANSMIT, GUIDE, HOLD].sort());
 });
 
 test('what-if: nothing for a solution that is already chosen; the design is not touched', () => {

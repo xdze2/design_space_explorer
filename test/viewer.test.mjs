@@ -19,7 +19,7 @@ const BELT = id('GT2 belt drive');
 const LEADSCREW = id('Leadscrew drive');
 const MOVE = id('Move the pen in XY');
 const LIFT = id('Lift and lower the pen');
-const GCODE = id('Turn G-code into motion');
+const GCODE = id('Turn drawing commands into motion');
 const TRANSMIT = id('Transmit motor motion');
 const GUIDE = id('Guide the axes');
 const SQUARE = id('Keep the gantry square');
@@ -29,6 +29,8 @@ const MICRO = id('Micro servo');
 const HOLDER = id('Spring-loaded 3D-printed pen holder');
 const PAPER = id('Paper format');
 const BUDGET = id('Budget');
+const PRESSURE = id('Set the pen pressure');
+const SPRING = id('Spring against a hard stop');
 
 test('markdown: paragraphs, bold, code, lists', () => {
   const html = renderMarkdown('**Hi** `x`\n\n- a\n- b');
@@ -89,31 +91,33 @@ const rowsOf = (design, route = {}) => {
 const rowsFor = (design, route) => visibleRows(graph, design, analyzeDesign(graph, design), route);
 const titles = (rows) => rows.map((r) => graph.byId.get(r.id).title);
 
-test('outline: nothing chosen lists the root, its three functions and the constraints', () => {
+test('outline: nothing chosen lists the root, its four functions and the constraints', () => {
   const rows = rowsFor(emptyDesign());
   const t = titles(rows);
-  assert.deepEqual(t.slice(0, 4), ['Draw a design on paper with a pen', 'Move the pen in XY', 'Lift and lower the pen', 'Turn G-code into motion']);
-  assert.deepEqual(rows.slice(0, 4).map((r) => r.depth), [0, 1, 1, 1]);
+  assert.deepEqual(t.slice(0, 5), ['Draw a design with a pen or brush', 'Move the pen in XY', 'Lift and lower the pen', 'Change pens', 'Turn drawing commands into motion']);
+  assert.deepEqual(rows.slice(0, 5).map((r) => r.depth), [0, 1, 1, 1, 1]);
   const constraints = data.nodes.filter((n) => n.type === 'constraint').map((n) => n.id);
-  assert.deepEqual(rows.slice(4).map((r) => r.id).sort(), constraints.sort());
-  assert.ok(rows.slice(4).every((r) => r.kind === 'constraint' && r.depth === 0));
+  assert.deepEqual(rows.slice(5).map((r) => r.id).sort(), constraints.sort());
+  assert.ok(rows.slice(5).every((r) => r.kind === 'constraint' && r.depth === 0));
   // solutions are chips on the function row, in the author's order
-  assert.deepEqual(rows[1].solutions.map((s) => graph.byId.get(s).title), ['Cartesian, two Y rails', 'CoreXY', 'Single-rail cantilever']);
+  assert.deepEqual(rows[1].solutions.map((s) => graph.byId.get(s).title), ['Cartesian, two Y rails', 'CoreXY', 'H-bot', 'Single-rail cantilever', 'Hanging polargraph', 'Five-bar arm (SCARA)', 'Grit-wheel paper feed']);
 });
 
 test('outline: a chosen solution expands', () => {
   const d = choose(graph, emptyDesign(), MOVE, CARTESIAN);
   const rows = rowsFor(d);
   const at = rows.findIndex((r) => r.id === MOVE);
-  assert.deepEqual(rows.slice(at + 1, at + 4).map((r) => [graph.byId.get(r.id).title, r.depth, r.dormant]),
-    [['Transmit motor motion', 2, false], ['Guide the axes', 2, false], ['Keep the gantry square', 2, false]]);
+  assert.deepEqual(rows.slice(at + 1, at + 6).map((r) => [graph.byId.get(r.id).title, r.depth, r.dormant]),
+    [['Drive the axes', 2, false], ['Transmit motor motion', 2, false], ['Guide the axes', 2, false], ['Keep the gantry square', 2, false], ['Hold the drawing surface', 2, false]]);
   assert.equal(rows.find((r) => r.id === TRANSMIT).depth, 2);
 });
 
 test('outline: components of a choice are listed under the function', () => {
-  const rows = rowsFor(choose(graph, emptyDesign(), LIFT, SERVO));
+  const d = choose(graph, choose(graph, emptyDesign(), LIFT, SERVO), PRESSURE, SPRING);
+  const rows = rowsFor(d);
   const at = rows.findIndex((r) => r.id === LIFT);
-  assert.deepEqual(rows.slice(at + 1, at + 3).map((r) => [r.id, r.kind, r.depth]), [[MICRO, 'component', 2], [HOLDER, 'component', 2]]);
+  assert.deepEqual(rows.slice(at + 1, at + 4).map((r) => [r.id, r.depth]), [[PRESSURE, 2], [HOLDER, 3], [MICRO, 2]]);
+  assert.deepEqual([HOLDER, MICRO].map((c) => rows.find((r) => r.id === c).kind), ['component', 'component']);
 });
 
 test('outline: rejecting or shortlisting lists nothing new', () => {
@@ -124,9 +128,9 @@ test('outline: rejecting or shortlisting lists nothing new', () => {
 
 test('outline: peek lists a dormant subtree, one peek per function, unpeek hides it', () => {
   const d = emptyDesign();
-  assert.deepEqual(rowsOf(d, { peek: [COREXY] }).slice(1, 5), ['  Move the pen in XY', '    Transmit motor motion~', '    Guide the axes~', '  Lift and lower the pen']);
-  assert.deepEqual(rowsOf(d, { peek: [COREXY, CARTESIAN] }).slice(1, 6),
-    ['  Move the pen in XY', '    Transmit motor motion~', '    Guide the axes~', '    Keep the gantry square~', '  Lift and lower the pen']);
+  assert.deepEqual(rowsOf(d, { peek: [COREXY] }).slice(1, 7), ['  Move the pen in XY', '    Drive the axes~', '    Transmit motor motion~', '    Guide the axes~', '    Hold the drawing surface~', '  Lift and lower the pen']);
+  assert.deepEqual(rowsOf(d, { peek: [COREXY, CARTESIAN] }).slice(1, 8),
+    ['  Move the pen in XY', '    Drive the axes~', '    Transmit motor motion~', '    Guide the axes~', '    Keep the gantry square~', '    Hold the drawing surface~', '  Lift and lower the pen']);
   assert.equal(rowsOf(d, { peek: [] }).length, rowsOf(d).length);
   assert.deepEqual(togglePeek(graph, [COREXY], MOVE, CARTESIAN), [CARTESIAN]);
   assert.deepEqual(togglePeek(graph, [COREXY], MOVE, COREXY), []);
@@ -145,10 +149,10 @@ test('outline: collapse hides the lines below and counts them', () => {
   const d = choose(graph, emptyDesign(), MOVE, CARTESIAN);
   const rows = rowsFor(d, { fold: [MOVE] });
   const move = rows.find((r) => r.id === MOVE);
-  assert.deepEqual([move.folded, move.hidden, move.foldable], [true, 3, true]);
+  assert.deepEqual([move.folded, move.hidden, move.foldable], [true, 5, true]);
   assert.ok(!rows.some((r) => r.id === TRANSMIT));
   assert.equal(rowsFor(d).find((r) => r.id === MOVE).foldable, true);
-  assert.equal(rowsFor(d).find((r) => r.id === LIFT).foldable, false);
+  assert.equal(rowsFor(d).find((r) => r.id === GCODE).foldable, false);
   assert.deepEqual(toggleFold([MOVE], MOVE), []);
   assert.deepEqual(toggleFold([], MOVE), [MOVE]);
 });
@@ -191,11 +195,11 @@ test('outline: functions under a function follow the how list as built, not the 
   assert.deepEqual(visibleRows(g, emptyDesign(), analyzeDesign(g, emptyDesign())).map((r) => r.id), ['root', 'z', 'a', 'm']);
 });
 
-test('demo graph: the main function lists move, lift, then G-code, and gantry solutions bring the guide', () => {
+test('demo graph: the main function lists move, lift, pens, then commands, and gantry solutions bring the guide', () => {
   const t = (nid) => graph.byId.get(nid).how.map((c) => graph.byId.get(c).title);
-  assert.deepEqual(t(data.root), ['Move the pen in XY', 'Lift and lower the pen', 'Turn G-code into motion']);
+  assert.deepEqual(t(data.root), ['Move the pen in XY', 'Lift and lower the pen', 'Change pens', 'Turn drawing commands into motion']);
   const guide = data.nodes.find((n) => n.title === 'Guide the axes');
-  assert.equal(guide.why.length, 3);
+  assert.equal(guide.why.length, 5);
   assert.ok(guide.why.every((w) => graph.byId.get(w).type === 'solution'));
 });
 
