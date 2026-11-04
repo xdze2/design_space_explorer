@@ -17,19 +17,19 @@ The viewer SHALL be plain static files that load `graph.json` over HTTP and need
 - **THEN** the page shows a message naming the problem
 
 ### Requirement: Browse view
-The left panel SHALL show the whole `how` tree, one line per node, with the open node highlighted, followed by the constraint nodes as a separate group. The open node's detail (title, type, confidence, body as Markdown, sources, its `why` and `how` nodes, the functions it constrains or the constraints on it, and its `requires`, `excludes` and `compatible_with` edges, each as links that open the target node) SHALL be shown in the node modal.
+The left panel SHALL show the design tree (see Design tree layout) with the open node highlighted, followed by the constraint nodes as a separate group. The open node's detail SHALL be shown in the node panel (see `design-page`).
 
 #### Scenario: Open a node
-- **WHEN** the user opens the CoreXY node
-- **THEN** the modal shows its title, rendered body, sources, its why, its how, and links to the belt solution it requires and the leadscrew solution it excludes, and its line is highlighted
+- **WHEN** the user clicks the `CoreXY` chip
+- **THEN** the node panel shows `CoreXY` and its chip is highlighted
 
 #### Scenario: Open a constraint
-- **WHEN** the user opens the Paper size line in the constraint group
-- **THEN** the modal shows its body and a link to the function it constrains
+- **WHEN** the user clicks the Paper format line in the constraint group
+- **THEN** the node panel shows its body, the function it constrains and its value in the design
 
 #### Scenario: Follow an edge
-- **WHEN** the user clicks the link to the belt solution in the modal
-- **THEN** that node becomes the open node
+- **WHEN** the user follows the link to the belt solution in the node panel
+- **THEN** that node becomes the open node and its chip is highlighted
 
 #### Scenario: Body is not executed as HTML
 - **WHEN** a node body contains HTML tags
@@ -43,99 +43,126 @@ The repository SHALL provide a single command that serves the viewer and `graph.
 - **THEN** it prints a local URL at which the viewer loads the current `graph.json`
 
 ### Requirement: Outline repeats and marks
-A node reached by several whys SHALL appear under each, and from its second appearance on its how-children SHALL NOT be listed again and the line SHALL be marked as a repeat. Chosen, excluded, undecided, conflicting and needed nodes SHALL be marked on their lines.
+A function shown under several visible parents SHALL appear under each, and from its second appearance on its children SHALL NOT be listed again and the line SHALL be marked as a repeat. Function lines SHALL be marked with their status in the design (open, exploring, decided) and marked when they hold a problem.
 
 #### Scenario: Shared node repeated
-- **GIVEN** a function that is a how-child of two solutions
+- **GIVEN** a function that is a how-child of two visible solutions
 - **WHEN** the graph is shown
 - **THEN** the function appears under both, its own children are listed under the first only, and the second line is marked as a repeat
 
 #### Scenario: Chosen option marked
-- **GIVEN** the CoreXY solution is selected
-- **WHEN** it is visible in the graph
-- **THEN** its line is marked as chosen
+- **GIVEN** `CoreXY` is chosen
+- **WHEN** the graph is shown
+- **THEN** the `Move the pen in XY` line is marked decided and the `CoreXY` chip is chosen
 
 ### Requirement: Addressable view
-The open node and the current selection SHALL be encoded in the URL hash, so that reloading the page or sharing the URL restores the same view. Unknown node ids in the hash SHALL be ignored with a visible notice. Obsolete parameters (`up`, `down`, `layout`) SHALL be ignored.
+The open node, the collapsed lines and the peeked solutions SHALL be encoded in the URL hash, so that reloading or sharing the URL restores the same view. The design SHALL NOT be in the hash. Unknown node ids in the hash SHALL be ignored with a visible notice. Obsolete parameters (`up`, `down`, `layout`) SHALL be ignored, and `pick` SHALL be ignored with a notice.
 
 #### Scenario: Reload restores state
-- **GIVEN** the CoreXY option selected and the Leadscrew node open
+- **GIVEN** the Leadscrew node open and `CoreXY` peeked
 - **WHEN** the page is reloaded
-- **THEN** the same selection and open node are shown
+- **THEN** the same node is open and `CoreXY`'s sub-functions are shown peeked
 
 #### Scenario: Unknown id
-- **WHEN** the hash refers to `gantry/doesnotexist`
+- **WHEN** the hash refers to an id that is not in the graph
 - **THEN** the page shows a notice and still renders the rest of the view
 
 #### Scenario: Obsolete parameters
 - **WHEN** the hash has `up=1&down=3&layout=outline`
 - **THEN** the page renders normally
 
-### Requirement: Outline layout
-The graph SHALL be listed as a preorder tree of `how` links from the root, one node per line, each line indented by its depth, children in the order of the node's `how` list in `graph.json`, which is the author's order. Every line SHALL have the same height. Right of the names, three lanes SHALL be aligned vertically across all lines: state tags, links, and the `(?)` button. Constraint nodes SHALL be listed after the tree, in the same line layout.
+### Requirement: Design tree layout
+The graph SHALL be listed as a preorder tree from the root with one line per function, indented by depth. A function whose how-targets are solutions SHALL show them as chips on its line, in the author's order; below it SHALL be listed the how-targets (functions and components) of its chosen solution only. A function whose how-targets are functions SHALL list them below. Constraint nodes SHALL be listed after the tree.
 
-#### Scenario: Order and indentation
-- **WHEN** the graph is shown
-- **THEN** the root function is first, each first-level function follows at depth 1, and its solutions follow it at depth 2
+#### Scenario: Nothing chosen
+- **WHEN** the design is empty
+- **THEN** the root is first, `Move the pen in XY`, `Lift and lower the pen` and `Turn G-code into motion` follow at depth 1 with their solutions as chips, and nothing is listed below them
+
+#### Scenario: Chosen solution expands
+- **WHEN** `Cartesian, two Y rails` is chosen
+- **THEN** `Transmit motor motion`, `Guide the axes` and `Keep the gantry square` are listed at depth 2 under `Move the pen in XY`
+
+#### Scenario: Components of a choice
+- **WHEN** `Servo pen lift` is chosen
+- **THEN** `Micro servo` and `Spring-loaded 3D-printed pen holder` are listed under `Lift and lower the pen` as component lines
 
 #### Scenario: Author order
 - **GIVEN** a function whose `how` list is `[B, A]` while "A" sorts before "B" by title
 - **WHEN** the graph is shown
-- **THEN** B's line comes before A's under the function
-
-#### Scenario: Aligned lanes
-- **WHEN** lines of different depths are shown
-- **THEN** their tags, link ends and `(?)` buttons share the same horizontal positions
+- **THEN** B's chip comes before A's on the function line
 
 #### Scenario: Constraints listed
 - **WHEN** the graph is shown
 - **THEN** the constraint nodes appear after the tree
 
-### Requirement: State tags
-Each line SHALL show tags for its state in the tags lane: `chosen`, `excluded by <title>`, `undecided` (a decision: a function whose how-targets are solutions, none selected), `needs <title>` (a selected node whose requirement is missing) and `needed by <title>` (the missing node itself) and `conflict`. A line with no state SHALL show no tag.
+### Requirement: Line and chip actions
+Clicking a function, component or constraint line, or a solution chip, SHALL open that node in the node panel and SHALL NOT change the design. A function line with something listed below it SHALL have a collapse toggle; a solution chip whose solution has how-targets SHALL have a peek toggle.
 
-#### Scenario: Chosen and excluded
-- **GIVEN** the CoreXY solution is selected
-- **WHEN** the graph is shown
-- **THEN** the CoreXY line has a `chosen` tag and the Leadscrew line has an `excluded by CoreXY` tag
+#### Scenario: Chip opens
+- **WHEN** the user clicks the `CoreXY` chip
+- **THEN** the node panel shows `CoreXY` and the design is unchanged
 
-#### Scenario: Undecided
-- **WHEN** nothing is selected
-- **THEN** every decision line has an `undecided` tag
+#### Scenario: Line opens
+- **WHEN** the user clicks the `Lift and lower the pen` line
+- **THEN** the node panel shows the function and the design is unchanged
 
-### Requirement: Link lane
-The link lane SHALL draw `requires` (arrow), `excludes` (red, dashed) and `compatible_with` (dotted) links as SVG curves joining the lines of the two nodes, one curve per pair for `excludes` and `compatible_with`. Curves SHALL be faint, and emphasized when they touch the open node or the hovered line.
-
-#### Scenario: Link between rows
-- **WHEN** the CoreXY option requires the belt option
-- **THEN** a curve with an arrow joins the CoreXY line to the belt line in the link lane
-
-#### Scenario: Emphasis
-- **WHEN** the user hovers the `CoreXY` line
-- **THEN** its `requires` and `excludes` curves are emphasized and the others stay faint
-
-### Requirement: Row actions
-Every line SHALL have a `(?)` button, in its lane, that opens the node's modal. Clicking the rest of a solution's line SHALL toggle its selection (see `design-page`); clicking the line of a function, a constraint or a component SHALL open its modal.
-
-#### Scenario: Button opens, line toggles
-- **WHEN** the user clicks the `(?)` of `CoreXY`, then closes the modal and clicks the `CoreXY` line
-- **THEN** the first click only opened the modal and the second selected the solution
-
-### Requirement: Node type icons
-Every line of the graph panel SHALL show, before the title, a small icon for the node's type (function, solution, component or constraint), the four icons being visibly different in shape. Icons SHALL NOT use external assets, SHALL NOT change the height of a line, and SHALL stay readable in the page's theme. The graph panel SHALL show a short legend of the four icons with their type names, and the node modal SHALL show the node's type icon next to its title.
+### Requirement: Type icons
+Every line of the graph panel SHALL show, before the title, a small icon for the node's type (function, component or constraint), and every chip SHALL show the solution icon; the four icons SHALL be visibly different in shape. Icons SHALL NOT use external assets and SHALL stay readable in the page's theme. The graph panel SHALL show a short legend of the four icons with their type names and of the chip states, and the node panel SHALL show the node's type icon next to its title.
 
 #### Scenario: Icon on every line
 - **WHEN** the graph is shown
-- **THEN** each line has one type icon, and lines of different types have different icons
+- **THEN** each line and chip has one type icon, and different types have different icons
 
 #### Scenario: Legend
 - **WHEN** the graph panel is shown
-- **THEN** it has a legend naming function, solution, component and constraint with their icons
+- **THEN** it has a legend naming function, solution, component and constraint with their icons, and the chip states
 
-#### Scenario: Icon in the modal
+#### Scenario: Icon in the node panel
 - **WHEN** the user opens a node
-- **THEN** the modal title is preceded by the icon of the node's type
+- **THEN** the panel title is preceded by the icon of the node's type
 
-#### Scenario: Same row height
-- **WHEN** lines of all four types are shown
-- **THEN** all lines have the same height
+### Requirement: Solution chips
+Each solution chip SHALL show one state from the design, by priority: chosen, rejected, excluded (by a chosen solution), required (by a chosen solution), shortlisted, open. A chosen chip that is also excluded or required SHALL be marked as a conflict. The chip's tooltip SHALL name the cause of an excluded or required state. Chip states SHALL be told apart by more than color alone.
+
+#### Scenario: Chosen and excluded
+- **GIVEN** `CoreXY` is chosen
+- **WHEN** the graph is shown
+- **THEN** the `CoreXY` chip is chosen, the `Leadscrew drive` chip is excluded with `CoreXY` named in its tooltip, and the `GT2 belt drive` chip is required
+
+#### Scenario: Conflict
+- **GIVEN** `CoreXY` and `Leadscrew drive` are both chosen
+- **WHEN** the graph is shown
+- **THEN** the `Leadscrew drive` chip is chosen and marked as a conflict
+
+#### Scenario: Shortlisted and rejected
+- **GIVEN** `FluidNC on ESP32` is shortlisted and `GRBL on Arduino Uno with CNC shield` rejected
+- **WHEN** the graph is shown
+- **THEN** their chips show those states
+
+### Requirement: Peek
+Peeking a solution SHALL list its how-targets under its function, marked dormant, without choosing it. Lines under a peeked solution SHALL behave as other lines (open, collapse, peek further). Peeking a second solution of the same function SHALL replace the first. Peeking the chosen solution SHALL do nothing.
+
+#### Scenario: Peek an undecided gantry
+- **GIVEN** nothing is chosen under `Move the pen in XY`
+- **WHEN** the user toggles peek on `CoreXY`
+- **THEN** `Transmit motor motion` and `Guide the axes` are listed under the function, marked dormant, and the design is unchanged
+
+#### Scenario: Unpeek
+- **WHEN** the user toggles peek on `CoreXY` again
+- **THEN** its sub-functions are hidden again
+
+### Requirement: Collapse
+A collapsed function line SHALL hide everything listed below it and show how many lines are hidden. Lines SHALL be expanded by default.
+
+#### Scenario: Collapse a function
+- **GIVEN** `Cartesian, two Y rails` is chosen
+- **WHEN** the user collapses `Move the pen in XY`
+- **THEN** its sub-functions are hidden and the line shows that 3 lines are hidden
+
+### Requirement: Open node stays visible
+When the open node would be hidden (under a collapsed line, or under a solution that is neither chosen nor peeked), the graph SHALL show the path to it, marked dormant where not chosen, without changing the stored collapse or peek state.
+
+#### Scenario: Open a hidden function
+- **GIVEN** nothing is chosen under `Move the pen in XY`
+- **WHEN** the user opens `Keep the gantry square` from a link
+- **THEN** the graph lists it, dormant, under `Move the pen in XY` and highlights it

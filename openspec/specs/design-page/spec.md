@@ -6,97 +6,134 @@ Gives the viewer one full-width page: a graph panel on the left, the main view o
 ## Requirements
 
 ### Requirement: Views and routes
-The hash SHALL encode the selection (`pick`), the open node (`view`) independently. Old links SHALL still open the page: `#/design`, `#/graph` and `#/selection` as the page, `#/browse` and `#/browse/<id>` with `view=<id>` for the latter (root meaning none). Unknown node ids SHALL be ignored with a visible notice.
+The hash SHALL encode view state only: the open node (`view`), the collapsed lines (`fold`) and the peeked solutions (`peek`). It SHALL NOT encode the design. Old links SHALL still open the page: `#/design`, `#/graph` and `#/selection` as the page, `#/browse` and `#/browse/<id>` with `view=<id>` for the latter (root meaning none). A `pick` parameter SHALL be ignored with a visible notice saying that choices now live in the design. Unknown node ids SHALL be ignored with a visible notice.
 
 #### Scenario: Default
 - **WHEN** the viewer is opened without a hash
-- **THEN** the page is shown with an empty selection and no node open
+- **THEN** the page is shown with the stored design and no node open
 
 #### Scenario: Old links
-- **WHEN** the hash is `#/browse/gantry/corexy`
-- **THEN** the page is shown with `gantry/corexy` open in the modal
+- **WHEN** the hash is `#/browse/<CoreXY id>`
+- **THEN** the page is shown with `CoreXY` open in the node panel
+
+#### Scenario: Old pick link
+- **WHEN** the hash has `pick=<CoreXY id>`
+- **THEN** the design is unchanged and a notice explains that `pick` links are no longer read
 
 #### Scenario: Reload keeps state
-- **GIVEN** `gantry/corexy` selected and `drive/gt2-belt` open
+- **GIVEN** `GT2 belt drive` open and `Lift and lower the pen` collapsed
 - **WHEN** the page is reloaded
-- **THEN** the same selection and open node are shown
+- **THEN** the same node is open and the same line is collapsed
 
 ### Requirement: Design page layout
-The main view SHALL start with a small header showing the number of picked solutions, undecided decisions (functions whose how-targets are solutions) and problems (conflicts and missing requirements), and a Reset button, shown only when something is selected, that clears the selection and keeps the open node. Below the header it SHALL show, in order: the cached brief or the prompt box (existing behaviour), the conflicts, the required-but-not-selected nodes with a select action, the chosen solutions with their bodies and sources, and the undecided decisions. With an empty selection it SHALL show a hint to start choosing in the graph.
+With no node open, the node panel SHALL show the design overview: the design name and intent (editable), a line of counts (decided, undecided, problems), the brief area (existing behaviour), the conflicts and missing requirements each linking to the nodes involved, the decided functions with their choice, the undecided functions, and the buttons Export, Import, New design and Undo. With an empty design it SHALL show a hint to open a node in the graph and choose there.
 
 #### Scenario: Empty selection
-- **WHEN** nothing is selected
-- **THEN** the main view says so and points to the graph, the header shows 0 picked, and no Reset button
+- **WHEN** nothing is decided
+- **THEN** the overview shows 0 decided, the hint, and the buttons
 
 #### Scenario: Order
-- **WHEN** `gantry/corexy` and `drive/leadscrew` are selected
-- **THEN** the header comes first, then the brief area, then the conflict list
+- **WHEN** `CoreXY` and `Leadscrew drive` are chosen
+- **THEN** the name and counts come first, then the brief area, then the conflict list
 
 #### Scenario: Counts
-- **WHEN** only `gantry/corexy` is selected
-- **THEN** the header shows 1 picked, the other decisions as undecided, and 1 problem
+- **WHEN** only `CoreXY` is chosen
+- **THEN** the counts show 1 decided, the other active functions with solutions as undecided, and 1 problem
 
 #### Scenario: Reset
-- **GIVEN** solutions are selected
-- **WHEN** the user presses Reset in the header
-- **THEN** the selection is empty and the open node is unchanged
+- **GIVEN** a design with choices
+- **WHEN** the user presses New design in the overview
+- **THEN** the design is empty with a fresh id, the open node is unchanged, and Undo brings the previous design back
+
+#### Scenario: Back to the overview
+- **GIVEN** a node is open
+- **WHEN** the user closes the node panel or presses Esc
+- **THEN** the overview is shown and the design is unchanged
 
 ### Requirement: Narrow screens
-On a narrow screen the graph panel and the main view SHALL stack, the main view header SHALL wrap, and the modal SHALL fit the screen width. Nothing except code blocks SHALL scroll horizontally in the page body.
+On a narrow screen the graph panel and the node panel SHALL stack, with the node panel first when a node is open, and the edit buttons SHALL wrap. Nothing except code blocks SHALL scroll horizontally in the page body.
 
 #### Scenario: Phone width
 - **WHEN** the viewport is about 400px wide
 - **THEN** the page body does not scroll horizontally and the panels are stacked
 
 ### Requirement: Single page shell
-The viewer SHALL be one full-width page with no tabs and no top bar: a left panel showing the graph, a right panel showing the main view for the selection, and the node view in a modal over the page. The left panel SHALL take about 40% of the width. Each panel SHALL scroll on its own and keep its scroll position when the selection or the open node changes.
+The viewer SHALL be one full-width page with no tabs and no top bar: a left panel showing the graph and a right panel, full height, showing the open node or the design overview. There SHALL be no modal. The left panel SHALL take about 40% of the width. Each panel SHALL scroll on its own; the graph panel SHALL keep its scroll position when the design or the open node changes, and the node panel SHALL scroll to the top when a different node is opened.
 
 #### Scenario: Both panels visible
 - **WHEN** the viewer is opened
-- **THEN** the graph is on the left and the main view on the right, and there is no bar above them
+- **THEN** the graph is on the left and the overview on the right, and there is no bar above them
 
 #### Scenario: Scroll kept
-- **GIVEN** the main view is scrolled down
-- **WHEN** the user selects a solution
-- **THEN** the main view stays at the same scroll position
+- **GIVEN** the graph panel is scrolled down
+- **WHEN** the user chooses a solution in the node panel
+- **THEN** the graph panel stays at the same scroll position
 
-### Requirement: Click to choose options
-Clicking a solution's line in the graph SHALL toggle its selection, with at most one solution per decision. A solution excluded by the current selection and not chosen SHALL NOT toggle and SHALL be shown disabled, with the selected solution responsible named. A chosen solution SHALL always be removable. A solution SHALL also be chosen or unchosen from its own node view and from its decision's node view, which lists its solutions with a choose action each. Functions, constraints and components SHALL have no selection toggle.
+### Requirement: Node panel content
+The node panel SHALL show, in order: the breadcrumb, the node's type icon, title, type, confidence and id, body as Markdown and sources, context (why; for a solution the other solutions of its function), implications (what it brings, requires, excludes, what constrains it), its status in the design, a what-if preview when not in the design, then the edit buttons. Every node named SHALL be a link that opens it.
 
-#### Scenario: Click to choose
-- **WHEN** the user clicks the `CoreXY` line
-- **THEN** `gantry/corexy` is selected and its line is marked chosen
+#### Scenario: Open a solution
+- **WHEN** the user opens `CoreXY`
+- **THEN** the panel shows the breadcrumb `Draw a design on paper with a pen › Move the pen in XY`, its body, the other gantry solutions, that it brings `Transmit motor motion` and `Guide the axes`, requires `GT2 belt drive` and excludes `Leadscrew drive`
 
-#### Scenario: One per decision
-- **GIVEN** `gantry/corexy` is selected
-- **WHEN** the user clicks the `H-bot` line
-- **THEN** `gantry/h-bot` replaces `gantry/corexy`
+#### Scenario: Follow a link
+- **GIVEN** `CoreXY` is open
+- **WHEN** the user follows the `GT2 belt drive` link
+- **THEN** `GT2 belt drive` is open in the panel and the design is unchanged
 
-#### Scenario: Excluded option
-- **GIVEN** `gantry/corexy` is selected
-- **WHEN** the user clicks the `Leadscrew` line
-- **THEN** the selection is unchanged and the line shows `CoreXY` as the cause
+#### Scenario: Body is not executed as HTML
+- **WHEN** a node body contains HTML tags
+- **THEN** they are shown as text
 
-#### Scenario: Choose from the decision
-- **WHEN** the user opens the gantry function and chooses `CoreXY`
-- **THEN** `gantry/corexy` is selected
+### Requirement: Breadcrumb path
+The breadcrumb SHALL follow the why-path through active functions and chosen solutions when one exists, and otherwise the first why at each step.
 
-### Requirement: Node modal
-The node view SHALL open as a modal over the page, which stays rendered underneath. It SHALL open from the `(?)` icon of any line in the graph, from a function or constraint line, and from links in the main view. It SHALL show title, type, confidence, body as Markdown, sources, links for `why` and `how`, for `constrains` and `constrained_by`, and for `requires`, `excludes` and `compatible_with`, and for a solution the choose action. Following an edge link SHALL show that node in the same modal. Esc, the close button or a click outside the dialog SHALL close it without changing the selection.
+#### Scenario: Shared function
+- **GIVEN** `Single-rail cantilever` is chosen
+- **WHEN** the user opens `Transmit motor motion`
+- **THEN** the breadcrumb goes through `Move the pen in XY › Single-rail cantilever`
 
-#### Scenario: Open from the icon
-- **WHEN** the user clicks the `(?)` of the `Leadscrew` line
-- **THEN** a modal shows `drive/leadscrew` and the selection is unchanged
+### Requirement: Status in the design
+For a function the panel SHALL show its status, choice, shortlist, rejected solutions with their reasons and notes, and list its solutions each with its state (chosen, shortlisted, rejected, excluded by, required by, open) and buttons. For a solution it SHALL show its state under its function, with the reason when excluded, required or rejected. For a constraint it SHALL show its value in the design.
 
-#### Scenario: Why and how links
-- **WHEN** a solution with a sub-function is opened
-- **THEN** the modal links to the function it answers (why) and to the sub-function (how)
+#### Scenario: Excluded reason
+- **GIVEN** `CoreXY` is chosen
+- **WHEN** the user opens `Leadscrew drive`
+- **THEN** the panel says it is excluded by `CoreXY`
 
-#### Scenario: Close
-- **WHEN** the user presses Esc, the × or the backdrop
-- **THEN** the modal closes and the selection is unchanged
+#### Scenario: Rejected reason
+- **GIVEN** `Solenoid pen lift` was rejected with reason "too loud"
+- **WHEN** the user opens it
+- **THEN** the panel shows rejected and "too loud"
 
-#### Scenario: Follow an edge
-- **GIVEN** `gantry/corexy` is shown
-- **WHEN** the user follows the `drive/gt2-belt` link
-- **THEN** `drive/gt2-belt` is shown in the same modal
+### Requirement: Edit buttons
+The node panel SHALL be the only place that edits the design (besides the overview's name, intent and file buttons). For a solution it SHALL offer Choose or Unchoose, Shortlist or Unshortlist, Reject (asking for a reason in the panel) or Unreject; for a function a notes field and the same buttons per listed solution; for a constraint a value field. An Undo button SHALL be available whenever there is something to undo.
+
+#### Scenario: Choose from the solution
+- **WHEN** the user opens `CoreXY` and presses Choose
+- **THEN** `CoreXY` is the choice of `Move the pen in XY` and the graph shows its chip as chosen
+
+#### Scenario: Choose from the function
+- **WHEN** the user opens `Move the pen in XY` and presses Choose next to `CoreXY`
+- **THEN** `CoreXY` is chosen
+
+#### Scenario: Reject with a reason
+- **WHEN** the user presses Reject on `Solenoid pen lift`, types "too loud" and confirms
+- **THEN** it is rejected with that reason
+
+#### Scenario: Constraint value
+- **WHEN** the user opens `Paper format` and enters "A4, sometimes A3"
+- **THEN** the design stores that value for the constraint
+
+### Requirement: What-if preview
+For a solution that is not chosen, the panel SHALL show what choosing it would change: the current choice it would replace, the functions that would become active or inactive, the requirements it would add that are not chosen, and the chosen solutions it would conflict with. For an inactive function it SHALL name the solution choices that would make it active. The preview SHALL NOT change the design.
+
+#### Scenario: Preview a replacement
+- **GIVEN** `CoreXY` is chosen
+- **WHEN** the user opens `Cartesian, two Y rails`
+- **THEN** the preview says it would replace `CoreXY`, activate `Keep the gantry square`, and drop the requirement on `GT2 belt drive`
+
+#### Scenario: Preview a conflict
+- **GIVEN** `CoreXY` is chosen
+- **WHEN** the user opens `Leadscrew drive`
+- **THEN** the preview says it would conflict with `CoreXY`
