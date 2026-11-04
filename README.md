@@ -90,12 +90,16 @@ npm run build   # refresh graph.json
 npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
 ```
 
+![Viewer with a selection: outline graph on the left, chosen options on the right](docs/selection.png)
+
 One full-width page, no tabs:
 
 - **Top bar**: a compact selection summary. Decisions are grouped by `slot` (decisions without one go to "Other"), one pill each showing the chosen option or `?`; a pill opens its decision. Pills turn red on a conflict and amber on a missing requirement. Counts of picked options, undecided decisions and problems, and **Reset**.
 - **Left panel (graph)**: the whole graph as an indented outline, one fixed-height line per node, indentation encodes depth. A node with several parents is repeated, with its children listed once. Right of the names, three lanes aligned across all lines: **state tags** (`chosen`, `excluded by X`, `undecided`, `needs X`, `needed by X`, `conflict`), a **link lane** where curves join the lines of linked nodes (`requires` with an arrow, `excludes` red dashed, `compatible_with` dotted; faint, lit for the open or hovered line), and a **`?` button** that opens the node. Clicking an option's line **toggles** it (one option per decision; an option excluded by the selection is disabled and names the cause). Clicking a decision opens it.
 - **Right panel (main view)**: the brief or prompt box, conflicts, required-but-unselected options, the chosen options with their text, and undecided decisions.
 - **Node modal** over the page (Esc, `×` or a click outside closes it): text, sources, `requires`/`excludes`/`compatible_with` links, a select/remove button for an option, and for a decision its options with Choose buttons.
+
+![Node modal over the page](docs/node-modal.png)
 
 The selection and the open node live in the URL hash, so reload, sharing and the back button work: `#/?pick=<id>,<id>&view=<id>`, e.g. `#/?pick=861c9946,e67a2f12&view=18f0f7e8`. Old forms still open the page: `#/design`, `#/graph`, `#/selection`, and `#/browse/<node-id>` (as `view=<node-id>`).
 
