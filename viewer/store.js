@@ -1,6 +1,8 @@
-import { emptyDesign, clean, ACTIONS } from './design.js';
+import { emptyDesign, clean, ACTIONS, DEFAULT_TOPIC } from './design.js';
 
+// The key before designs were per topic; still read once for the default topic.
 export const STORAGE_KEY = 'dse.design';
+export const storageKey = (topic) => `${STORAGE_KEY}.${topic}`;
 const UNDO_CAP = 100;
 
 // File name for an exported design: slug of the name + .design.json
@@ -12,7 +14,8 @@ export const serialize = (design) => JSON.stringify(design, null, 2) + '\n';
 // The one place that holds the current design. Applies actions, keeps the undo stack (in memory only) and saves to
 // `storage` (localStorage-like: getItem / setItem, may be null or throw) after every change.
 // Notices: [{ kind: 'info' | 'error', text }], shown by the page until dismissed.
-export function createStore(graph, { storage = null, key = STORAGE_KEY } = {}) {
+export function createStore(graph, { storage = null, topic = DEFAULT_TOPIC } = {}) {
+  const key = storageKey(topic);
   let design;
   const undoStack = [];
   const listeners = new Set();
@@ -34,18 +37,24 @@ export function createStore(graph, { storage = null, key = STORAGE_KEY } = {}) {
 
   function load() {
     let text = null;
+    let migrate = false;
     try {
       if (!storage) throw new Error('no storage');
       text = storage.getItem(key);
+      if (text == null && topic === DEFAULT_TOPIC) {
+        text = storage.getItem(STORAGE_KEY);
+        migrate = text != null;
+      }
     } catch {
       canSave = false;
       notify('error', 'Browser storage is not available: this design will not be kept after you close the page. Use Export to save it.');
     }
-    design = emptyDesign();
+    design = emptyDesign(topic);
     if (text == null) return;
     try {
       const loaded = clean(graph, JSON.parse(text));
-      design = loaded.design;
+      design = { ...loaded.design, topic };
+      if (migrate) save();
       if (loaded.dropped.length) notify('info', `Dropped from the saved design: ${loaded.dropped.join('; ')}`);
     } catch (e) {
       notify('error', `The saved design could not be read (${e.message}); started a new one.`);
@@ -84,7 +93,7 @@ export function createStore(graph, { storage = null, key = STORAGE_KEY } = {}) {
       emit({});
       return true;
     },
-    newDesign() { return replace(emptyDesign(), {}); },
+    newDesign() { return replace(emptyDesign(topic), {}); },
     // Replaces the design with the one in `text` (an exported file). Returns { ok } or { ok: false, error }.
     importText(text) {
       let loaded;
@@ -96,6 +105,13 @@ export function createStore(graph, { storage = null, key = STORAGE_KEY } = {}) {
         emit({});
         return { ok: false, error };
       }
+      if (loaded.design.topic && loaded.design.topic !== topic) {
+        const error = `the file is for topic "${loaded.design.topic}", this page shows "${topic}"`;
+        notify('error', `Import failed: ${error}. The design is unchanged.`);
+        emit({});
+        return { ok: false, error };
+      }
+      loaded.design.topic = topic;
       if (loaded.dropped.length) notify('info', `Imported with changes. Dropped: ${loaded.dropped.join('; ')}`);
       replace(loaded.design, {});
       emit({});

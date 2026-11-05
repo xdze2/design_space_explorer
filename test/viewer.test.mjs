@@ -9,7 +9,7 @@ import { designKey, contentHash, buildPrompt } from '../viewer/brief.js';
 import { abbreviation, tileLabel, badges } from '../viewer/card.js';
 import { idByTitle } from './helpers.mjs';
 
-const data = JSON.parse(readFileSync(new URL('../graph.json', import.meta.url)));
+const data = JSON.parse(readFileSync(new URL('../topics/pen_plotter/graph.json', import.meta.url)));
 const graph = { nodes: data.nodes, byId: new Map(data.nodes.map((n) => [n.id, n])), rootId: data.root };
 const known = new Set(graph.byId.keys());
 const id = idByTitle(data.nodes);

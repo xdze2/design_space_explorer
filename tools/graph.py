@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Edit the design graph: create nodes, add and remove links, print the tree, lint.
 
-Standard library only. Nodes are graph/*.md (frontmatter `id`, `title` and `type` are read
-here); links live in graph/links.jsonl, which only this tool writes, in canonical form.
+Standard library only. Nodes are topics/<topic>/knowledge_graph/*.md (frontmatter `id`, `title`, `type`, `summary` and
+`sources` are read here); links live in links.jsonl beside them, which only this tool writes, in canonical form.
 The Node build (scripts/build-graph.mjs) stays the full validator.
 """
 import argparse
@@ -20,7 +20,15 @@ CONFIDENCES = ("low", "medium", "high")
 KEY_ORDER = ("from", "to", "type", "order", "score", "src", "hint")
 SCORES = (-2, -1, 1, 2)
 SUMMARY_MAX = 120
-DEFAULT_GRAPH_DIR = Path(__file__).resolve().parent.parent / "graph"
+DEFAULT_TOPIC = "pen_plotter"
+TOPIC_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+TOPICS_DIR = Path(__file__).resolve().parent.parent / "topics"
+
+
+def topic_name(value):
+    if not TOPIC_PATTERN.match(value):
+        raise argparse.ArgumentTypeError("must be lowercase letters, digits, _ or -, starting with a letter or digit")
+    return value
 
 
 class GraphError(Exception):
@@ -40,7 +48,9 @@ def _scalar(value):
 
 
 def read_frontmatter(path):
-    """Return the top-level `id`, `title`, `type` and `summary` scalars of a node file (line scan, no YAML)."""
+    """Return the top-level `id`, `title`, `type` and `summary` scalars and the `sources` list of a node file (line scan, no YAML).
+
+    `sources` is read only when written as a JSON list (as `new` writes it); otherwise it is left out."""
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
         raise GraphError(f"{path.name}: missing frontmatter")
@@ -51,6 +61,14 @@ def read_frontmatter(path):
         m = re.match(r"(id|title|type|summary):\s*(.*)$", line)
         if m:
             found[m.group(1)] = _scalar(m.group(2))
+        m = re.match(r"sources:\s*(\[.*\])\s*$", line)
+        if m:
+            try:
+                value = json.loads(m.group(1))
+            except ValueError:
+                continue
+            if isinstance(value, list):
+                found["sources"] = [v for v in value if isinstance(v, str)]
     return found
 
 
@@ -64,7 +82,7 @@ def read_nodes(graph_dir):
             raise GraphError(f"{path.relative_to(graph_dir)}: no id in frontmatter")
         if node_id in nodes:
             raise GraphError(f"duplicate id {node_id} in {path.relative_to(graph_dir)} and {nodes[node_id]['path'].relative_to(graph_dir)}")
-        nodes[node_id] = {"id": node_id, "title": meta.get("title", node_id), "type": meta.get("type"), "summary": meta.get("summary"), "path": path}
+        nodes[node_id] = {"id": node_id, "title": meta.get("title", node_id), "type": meta.get("type"), "summary": meta.get("summary"), "sources": meta.get("sources", []), "path": path}
     return nodes
 
 
@@ -194,6 +212,10 @@ def title_key(nodes):
 
 def label(node_id, nodes):
     return f"{node_id} {nodes[node_id]['title']}"
+
+
+def is_raw_citation(value):
+    return value.startswith("raw/") or "/raw/" in value
 
 
 def slugify(title):
@@ -434,6 +456,13 @@ def cmd_lint(args, graph_dir, out):
     for l in sorted((l for l in known if l["type"] == "excludes"), key=sort_key):
         if (l["from"], l["to"]) in pairs or (l["to"], l["from"]) in pairs:
             findings.append(f"requires and excludes on the same pair: {label(l['from'], nodes)} / {label(l['to'], nodes)}")
+    for i in sorted(nodes, key=title_key(nodes)):
+        for s in nodes[i]["sources"]:
+            if is_raw_citation(s):
+                findings.append(f"raw/ file cited as a source: {label(i, nodes)}: {s}")
+    for l in sorted(links, key=sort_key):
+        if is_raw_citation(l["src"]):
+            findings.append(f"raw/ file cited as a link src: {l['type']} {l['from']} -> {l['to']}: {l['src']}")
     for l in sorted(known, key=sort_key):
         if l.get("hint") != hint_for(l, nodes):
             findings.append(f"stale hint on {l['type']} {l['from']} -> {l['to']}: expected \"{hint_for(l, nodes)}\"")
@@ -446,7 +475,8 @@ def cmd_lint(args, graph_dir, out):
 
 def build_parser():
     p = argparse.ArgumentParser(prog="graph.py", description=__doc__.split("\n")[0])
-    p.add_argument("--graph-dir", type=Path, default=DEFAULT_GRAPH_DIR, help="graph folder (default: ./graph of this repo)")
+    p.add_argument("--topic", type=topic_name, default=DEFAULT_TOPIC, help=f"topic folder under topics/ (default: {DEFAULT_TOPIC})")
+    p.add_argument("--graph-dir", type=Path, help="knowledge graph folder, overrides --topic")
     sub = p.add_subparsers(dest="command", required=True)
 
     def add_link_options(sp):
@@ -492,7 +522,7 @@ def main(argv=None, out=None):
     out = out or sys.stdout
     args = build_parser().parse_args(argv)
     try:
-        return args.run(args, args.graph_dir, out) or 0
+        return args.run(args, args.graph_dir or TOPICS_DIR / args.topic / "knowledge_graph", out) or 0
     except GraphError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1

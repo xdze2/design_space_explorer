@@ -8,7 +8,9 @@ const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const freshId = () => `d-${Math.random().toString(16).slice(2, 10).padEnd(8, '0')}`;
 const isObject = (v) => v && typeof v === 'object' && !Array.isArray(v);
 
-export const emptyDesign = () => ({ format: FORMAT, id: freshId(), name: DEFAULT_NAME, intent: '', constraints: {}, functions: {} });
+export const TOPIC_RE = /^[a-z0-9][a-z0-9_-]*$/;
+export const DEFAULT_TOPIC = 'pen_plotter';
+export const emptyDesign = (topic) => ({ format: FORMAT, ...(topic ? { topic } : {}), id: freshId(), name: DEFAULT_NAME, intent: '', constraints: {}, functions: {} });
 export const emptyEntry = () => ({ status: 'open', choice: null, shortlist: [], rejected: [], notes: '' });
 export const entryOf = (design, fnId) => design.functions[fnId] ?? emptyEntry();
 
@@ -46,6 +48,8 @@ export function clean(graph, raw) {
   const design = emptyDesign();
   if (typeof raw.id === 'string' && ID_RE.test(raw.id)) design.id = raw.id;
   else if (raw.id !== undefined) dropped.push(`invalid design id ${JSON.stringify(raw.id)}`);
+  if (typeof raw.topic === 'string' && TOPIC_RE.test(raw.topic)) design.topic = raw.topic;
+  else if (raw.topic !== undefined) dropped.push(`invalid topic ${JSON.stringify(raw.topic)}`);
   if (typeof raw.name === 'string' && raw.name.trim()) design.name = raw.name.trim();
   if (typeof raw.intent === 'string') design.intent = raw.intent.trim();
 

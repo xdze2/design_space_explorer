@@ -3,6 +3,8 @@ import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parse } from 'yaml';
 
+const DEFAULT_TOPIC = 'pen_plotter';
+const TOPIC_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 const TYPES = ['function', 'solution', 'component', 'constraint'];
 const CONFIDENCES = ['low', 'medium', 'high'];
 const LINK_TYPES = ['how', 'constrains', 'requires', 'excludes', 'compatible_with', 'fares'];
@@ -208,7 +210,7 @@ function checkHierarchy(nodes, whys, hows, byId, errors) {
   return roots[0].id;
 }
 
-// Pictures are graph/img/<id>.svg; returns the set of ids that have one.
+// Pictures are knowledge_graph/img/<id>.svg; returns the set of ids that have one.
 function listPictures(dir, byId, errors) {
   const ids = new Set();
   if (!existsSync(dir)) return ids;
@@ -267,7 +269,7 @@ export function buildGraph(graphDir, outFile) {
   const nested = [];
   const top = listMarkdown(root, nested);
   for (const path of nested) {
-    errors.push(`${relative(root, path).replace(/\\/g, '/')}: node files must sit directly under graph/, not in a subfolder`);
+    errors.push(`${relative(root, path).replace(/\\/g, '/')}: node files must sit directly under knowledge_graph/, not in a subfolder`);
   }
   for (const path of top) {
     const file = relative(root, path).replace(/\\/g, '/');
@@ -301,8 +303,13 @@ export function buildGraph(graphDir, outFile) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const graphDir = process.argv[2] ?? 'graph';
-  const outFile = process.argv[3] ?? 'graph.json';
+  const topic = process.argv[2] ?? DEFAULT_TOPIC;
+  if (!TOPIC_PATTERN.test(topic)) {
+    console.error(`error: topic "${topic}" must be lowercase letters, digits, _ or -, starting with a letter or digit`);
+    process.exit(1);
+  }
+  const graphDir = `topics/${topic}/knowledge_graph`;
+  const outFile = `topics/${topic}/graph.json`;
   const { errors, graph } = buildGraph(graphDir, outFile);
   if (errors.length) {
     console.error(errors.map((e) => `error: ${e}`).join('\n'));

@@ -20,11 +20,11 @@ The demo graph SHALL include at least five `requires` or `excludes` edges betwee
 - **THEN** the declaring node's body explains why they cannot be combined
 
 ### Requirement: Graph builds cleanly
-The demo graph SHALL pass the build with no errors.
+The demo graph SHALL be the `pen_plotter` topic (`topics/pen_plotter/knowledge_graph/`) and SHALL pass the build with no errors.
 
 #### Scenario: Demo build
-- **WHEN** the build runs on the demo `graph/` folder
-- **THEN** it exits with code 0 and writes `graph.json`
+- **WHEN** the build runs on the `pen_plotter` topic
+- **THEN** it exits with code 0 and writes `topics/pen_plotter/graph.json`
 
 ### Requirement: Demo graph structure
 The demo graph SHALL be a new FAST tree about a DIY pen plotter, authored from scratch with `tools/graph.py` (new generated ids, free titles and structure), and SHALL contain between 40 and 70 nodes. It SHALL have one main function, at least three first-level functions, and at least two solutions for each function whose how-targets are solutions. At least one function SHALL have alternative solutions at depth 2 or more under a solution, showing the AND/OR alternation (for example sub-functions brought by a gantry solution, each with its own solutions). At least one sub-function SHALL be shared by two solutions (several whys). At least one solution SHALL have component children. It SHALL build without error and pass `lint` with no finding.
@@ -67,3 +67,26 @@ The demo graph SHALL contain at least two constraint nodes, each with a `constra
 #### Scenario: No target values
 - **WHEN** the body of a constraint is read
 - **THEN** it does not set a paper format such as "A3" or a dollar amount as the goal
+
+### Requirement: Card data in the demo
+Every solution and component of the demo graph SHALL have a `summary`. Every solution SHALL have between one and four `fares` links, each to a constraint that bears on the solution's function or one of its ancestors, chosen for the tradeoffs its body already describes, with the reason stated in the body. The `fares` links SHALL use `src` `LLM:<model>` when written by an LLM.
+
+#### Scenario: Summaries everywhere
+- **WHEN** `python3 tools/graph.py lint` is run on the demo graph
+- **THEN** it reports no missing summary
+
+#### Scenario: Badges match the prose
+- **GIVEN** the body of `Leadscrew drive` says it is slow
+- **WHEN** its `fares` links are read
+- **THEN** it fares negatively on `Drawing speed`
+
+### Requirement: Pilot pictures
+Each solution of "Move the pen in XY" SHALL have a picture in `graph/img/`: a monochrome line drawing of its kinematics in one shared style (same view box, stroke width and grey, no text and no fill colour other than that grey). Other nodes MAY have none.
+
+#### Scenario: Pilot set
+- **WHEN** the cards of "Move the pen in XY" are shown
+- **THEN** every card shows a picture and none shows an abbreviation tile
+
+#### Scenario: Shared style
+- **WHEN** the pilot SVG files are compared
+- **THEN** they share the same `viewBox` and stroke width and contain no `<text>` element

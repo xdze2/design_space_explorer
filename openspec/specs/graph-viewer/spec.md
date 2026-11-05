@@ -6,15 +6,23 @@ A static web page that loads the compiled `graph.json` and lets a person browse 
 ## Requirements
 
 ### Requirement: Static loading
-The viewer SHALL be plain static files that load `graph.json` over HTTP and need no build step beyond producing `graph.json`. If `graph.json` cannot be loaded or is malformed, the page SHALL show an error message instead of an empty page.
+The viewer SHALL be plain static files that load the compiled graph of one topic, `topics/<topic>/graph.json`, over HTTP and need no build step beyond producing it. The topic SHALL come from the `topic` query parameter of the page URL, default `pen_plotter`; a name that does not follow the topic name rules SHALL be refused. Pictures and cached briefs SHALL be loaded from the same topic folder. If `graph.json` cannot be loaded or is malformed, the page SHALL show an error message instead of an empty page.
 
 #### Scenario: Graph loads
-- **WHEN** the page is opened from a static server next to a valid `graph.json`
+- **WHEN** the page is opened from a static server next to a valid `topics/pen_plotter/graph.json`
 - **THEN** the graph panel shows the root function and its how-children
 
+#### Scenario: Other topic
+- **WHEN** the page is opened with `?topic=other` and `topics/other/graph.json` is valid
+- **THEN** the graph of that topic is shown
+
 #### Scenario: Graph missing
-- **WHEN** `graph.json` returns an error or invalid JSON
+- **WHEN** `graph.json` returns an error or invalid JSON, or the topic does not exist
 - **THEN** the page shows a message naming the problem
+
+#### Scenario: Invalid topic name
+- **WHEN** the page is opened with `?topic=../x`
+- **THEN** the page shows an error about the topic name and fetches nothing
 
 ### Requirement: Browse view
 The left panel SHALL show the design tree (see Design tree layout) with the open node highlighted, followed by the constraint nodes as a separate group. The open node's detail SHALL be shown in the node panel (see `design-page`).
@@ -36,11 +44,15 @@ The left panel SHALL show the design tree (see Design tree layout) with the open
 - **THEN** they are shown as text, not interpreted
 
 ### Requirement: Local serving
-The repository SHALL provide a single command that serves the viewer and `graph.json` locally.
+The repository SHALL provide a single command that serves the viewer and the topics' files locally. It SHALL NOT serve any topic's `raw/` folder.
 
 #### Scenario: Serve
 - **WHEN** the serve command is run
-- **THEN** it prints a local URL at which the viewer loads the current `graph.json`
+- **THEN** it prints a local URL at which the viewer loads the current `topics/pen_plotter/graph.json`
+
+#### Scenario: Raw is private
+- **WHEN** a file under `topics/pen_plotter/raw/` is requested
+- **THEN** the server answers 403
 
 ### Requirement: Outline repeats and marks
 A function shown under several visible parents SHALL appear under each, and from its second appearance on its children SHALL NOT be listed again and the line SHALL be marked as a repeat. Function lines SHALL be marked with their status in the design (open, exploring, decided) and marked when they hold a problem.

@@ -5,7 +5,7 @@ import { createStore, fileName, serialize, STORAGE_KEY } from '../viewer/store.j
 import { emptyDesign, setName } from '../viewer/design.js';
 import { idByTitle } from './helpers.mjs';
 
-const data = JSON.parse(readFileSync(new URL('../graph.json', import.meta.url)));
+const data = JSON.parse(readFileSync(new URL('../topics/pen_plotter/graph.json', import.meta.url)));
 const graph = { nodes: data.nodes, byId: new Map(data.nodes.map((n) => [n.id, n])), rootId: data.root };
 const id = idByTitle(data.nodes);
 const MOVE = id('Move the pen in XY');
@@ -153,4 +153,39 @@ test('import: unknown ids are dropped and named in the notice', () => {
   assert.ok(s.notices.at(-1).text.includes('zz99'));
   assert.equal(s.design.functions[MOVE].choice, COREXY);
   assert.equal(s.design.functions.zz99, undefined);
+});
+
+test('store: the design is saved under a per-topic key and carries the topic', () => {
+  const storage = fakeStorage();
+  const s = createStore(graph, { storage, topic: 'pen_plotter' });
+  assert.equal(s.design.topic, 'pen_plotter');
+  s.act.choose(MOVE, COREXY);
+  assert.ok(storage.map.has('dse.design.pen_plotter'));
+  assert.ok(!storage.map.has(STORAGE_KEY));
+  assert.equal(JSON.parse(serialize(s.design)).topic, 'pen_plotter');
+  const other = createStore(graph, { storage, topic: 'other' });
+  assert.deepEqual(other.design.functions, {});
+});
+
+test('store: the old key is read once for pen_plotter and never for another topic', () => {
+  const storage = fakeStorage();
+  storage.map.set(STORAGE_KEY, JSON.stringify({ id: 'd-1', functions: { [MOVE]: { choice: COREXY } } }));
+  assert.deepEqual(createStore(graph, { storage, topic: 'other' }).design.functions, {});
+  const s = createStore(graph, { storage });
+  assert.equal(s.design.functions[MOVE].choice, COREXY);
+  assert.ok(storage.map.has('dse.design.pen_plotter'));
+  storage.map.set(STORAGE_KEY, '{}');
+  assert.equal(createStore(graph, { storage }).design.functions[MOVE].choice, COREXY);
+});
+
+test('import: a file naming another topic is refused, one without a topic is accepted', () => {
+  const s = createStore(graph, { storage: fakeStorage() });
+  s.act.choose(MOVE, COREXY);
+  const before = s.design;
+  const r = s.importText(JSON.stringify({ topic: 'other', functions: {} }));
+  assert.equal(r.ok, false);
+  assert.match(r.error, /other/);
+  assert.equal(s.design, before);
+  assert.equal(s.importText(JSON.stringify({ functions: {} })).ok, true);
+  assert.equal(s.design.topic, 'pen_plotter');
 });

@@ -340,6 +340,25 @@ class GraphTest(unittest.TestCase):
         self.assertIn("solution without a summary: aaaa0005 Bare", out)
         self.assertEqual(len(out.splitlines()), 1)
 
+    def test_lint_raw_node_source(self):
+        text = node_text("aaaa0003", "GT2 belt").replace("sources: [user]", 'sources: ["raw/notes.md", "user"]')
+        (self.dir / "aaaa0003.md").write_text(text)
+        code, out, _ = self.run_cmd("lint")
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "raw/ file cited as a source: aaaa0003 GT2 belt: raw/notes.md\n")
+
+    def test_lint_raw_link_src(self):
+        self.run_ok("link", "aaaa0003", "--requires", "aaaa0004", "--src", "topics/pen_plotter/raw/notes.md")
+        code, out, _ = self.run_cmd("lint")
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "raw/ file cited as a link src: requires aaaa0003 -> aaaa0004: topics/pen_plotter/raw/notes.md\n")
+
+    def test_lint_public_sources_clean(self):
+        text = node_text("aaaa0003", "GT2 belt").replace("sources: [user]", 'sources: ["https://example.com/raw-data", "LLM:x", "user"]')
+        (self.dir / "aaaa0003.md").write_text(text)
+        self.run_ok("link", "aaaa0003", "--requires", "aaaa0004", "--src", "https://example.com/a/rawness")
+        self.assertEqual(self.run_cmd("lint")[:2], (0, ""))
+
     # -- Fares and summary -----------------------------------------------------
 
     def add_constraint(self):
@@ -385,8 +404,9 @@ class GraphTest(unittest.TestCase):
         self.run_ok("link", a, "--excludes", "aaaa0003")
         self.run_ok("new", "Budget", "--type", "constraint", "--constrains", "aaaa0002")
         out = Path(self._tmp.name) / "graph.json"
+        script = "import { buildGraph } from './scripts/build-graph.mjs'; const r = buildGraph(process.argv[1], process.argv[2]); if (r.errors.length) { console.error(r.errors.join('\\n')); process.exit(1); }"
         result = subprocess.run(
-            ["node", str(REPO / "scripts/build-graph.mjs"), str(self.dir), str(out)], capture_output=True, text=True
+            ["node", "--input-type=module", "-e", script, str(self.dir), str(out)], capture_output=True, text=True, cwd=REPO
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         data = json.loads(out.read_text())

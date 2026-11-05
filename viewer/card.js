@@ -29,13 +29,13 @@ export function badges(graph, node) {
     .sort((a, b) => b.score - a.score || (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
 }
 
-function picture(node) {
+function picture(graph, node) {
   const box = el('span', { class: 'pic' });
   if (!node.img) {
     box.append(tile(node));
     return box;
   }
-  const img = el('img', { src: `../graph/img/${node.id}.svg`, alt: '', loading: 'lazy' });
+  const img = el('img', { src: `${graph.base}knowledge_graph/img/${node.id}.svg`, alt: '', loading: 'lazy' });
   img.addEventListener('error', () => img.replaceWith(tile(node)));
   box.append(img);
   return box;
@@ -46,7 +46,7 @@ function picture(node) {
 export function card(graph, node, { at, header = false, chip = null, state = null, controls = null }) {
   const marks = badges(graph, node);
   return el('div', { class: `card ${chip?.state ?? ''}`.trim() },
-    picture(node),
+    picture(graph, node),
     el('div', { class: 'card-main' },
       header ? null : el('a', { class: 'card-title', href: at(node.id) }, node.title),
       node.summary ? el('p', { class: 'summary' }, node.summary) : null,

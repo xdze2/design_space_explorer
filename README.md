@@ -4,15 +4,24 @@ An LLM-maintained wiki of design decisions, stored as a graph of Markdown nodes.
 
 ## Layout
 
-- `graph/`: one Markdown file per node, `links.jsonl` with all links, and `img/` with the optional pictures
+One folder per topic under `topics/`; the first topic is `pen_plotter`. Every command below takes a topic (default `pen_plotter`).
+
+- `topics/<topic>/knowledge_graph/`: one Markdown file per node, `links.jsonl` with all links, and `img/` with the optional pictures
+- `topics/<topic>/graph.json`: compiled output (committed)
+- `topics/<topic>/designs/`: design files of existing products and of users (`<slug>.design.json`); `npm test` checks that each fits the topic's graph with nothing dropped
+- `topics/<topic>/briefs/`: cached briefs
+- `topics/<topic>/raw/`: source material (web pages, chats, notes). Git-ignored and never read by the build.
 - `tools/graph.py`: the tool that edits nodes and links
 - `scripts/build-graph.mjs`: validates the nodes and compiles them to `graph.json`
-- `graph.json`: compiled output (committed)
-- `raw/`: source material (web pages, chats, notes). Git-ignored and never read by the build.
+- `prompts/brief.md`: the brief prompt template, shared by all topics
+- `skills/`: project skills for Claude Code (see [Skills](#skills))
+- `inbox.md`: sources waiting to be ingested, one per line
+
+The old root paths (`graph/`, `graph.json`, `briefs/`, `raw/`) and the `build-graph` arguments `graphDir outFile` no longer work.
 
 ## Node format
 
-The graph is a FAST-style tree of functions and solutions (what must be done, and how). A node is a Markdown file directly under `graph/` (subfolders are rejected) with YAML frontmatter and a free prose body. Its id is the frontmatter `id`: 8 lowercase hex characters, unique in the graph, written in quotes. The file name means nothing to the graph (the tool creates `graph/<slug>.md`). Links are not in the node file; they live in `graph/links.jsonl`.
+The graph is a FAST-style tree of functions and solutions (what must be done, and how). A node is a Markdown file directly under `knowledge_graph/` (subfolders are rejected) with YAML frontmatter and a free prose body. Its id is the frontmatter `id`: 8 lowercase hex characters, unique in the graph, written in quotes. The file name means nothing to the graph (the tool creates `knowledge_graph/<slug>.md`). Links are not in the node file; they live in `links.jsonl` next to them.
 
 ```markdown
 ---
@@ -32,20 +41,20 @@ Why it would be chosen, the tradeoffs, and why each link to it exists.
 | `id` | yes | 8 lowercase hex characters, quoted |
 | `title` | yes | |
 | `type` | yes | `function`, `solution`, `component` or `constraint` |
-| `sources` | yes | non-empty list of free text: a URL, `user`, or `LLM:<model>` |
+| `sources` | yes | non-empty list of free text: a public URL, `user`, or `LLM:<model>`. Never a `raw/` file: readers of the repository cannot open it, so cite the page's URL instead (`graph.py lint` reports it) |
 | `confidence` | no | `low`, `medium` or `high`; use `low` for unchecked LLM content |
 | `summary` | no | one line (at most 120 characters) saying what the node is; shown on its card. `graph.py lint` asks for one on every solution and component |
 | `abbr` | no | 1 to 4 letters or digits for the picture tile of a node without a picture; the default is derived from the title (`NEMA 17 steppers` gives `N17S`) |
 
 `slot`, `parent`, `requires`, `excludes` and `compatible_with` are not allowed in the frontmatter: the build fails if it finds them.
 
-**Pictures.** A node may have a picture: a monochrome SVG at `graph/img/<id>.svg` (named by id, so a retitle keeps it; at most 50 kB). The build fails on any other file in `graph/img/` and sets `img: true` on the nodes that have one. The viewer shows it through `<img>`, so a picture can never run script. Style, so the pictures look like a set: `viewBox="0 0 120 90"`, `stroke="#555"`, `stroke-width="2"`, `fill="none"` (the same grey may fill a motor), no `<text>`, a schematic top view of the mechanism. Nodes without a picture get a tile with their abbreviation.
+**Pictures.** A node may have a picture: a monochrome SVG at `knowledge_graph/img/<id>.svg` (named by id, so a retitle keeps it; at most 50 kB). The build fails on any other file in `img/` and sets `img: true` on the nodes that have one. The viewer shows it through `<img>`, so a picture can never run script. Style, so the pictures look like a set: `viewBox="0 0 120 90"`, `stroke="#555"`, `stroke-width="2"`, `fill="none"` (the same grey may fill a motor), no `<text>`, a schematic top view of the mechanism. Nodes without a picture get a tile with their abbreviation.
 
 The root is the **main function**: the one function with no "why". Constraint nodes hold prose only: the kind of limit and how solutions fare. Values such as a paper format or a price belong to design documents, not to the graph.
 
 ## Links file
 
-`graph/links.jsonl` holds every link, one JSON object per line:
+`links.jsonl` holds every link, one JSON object per line:
 
 ```
 {"from":"861c9946","to":"b3a8fe22","type":"how","src":"user","hint":"CoreXY > Transmit motor motion"}
@@ -57,7 +66,7 @@ The root is the **main function**: the one function with no "why". Constraint no
 | `type` | `how`, `constrains`, `requires`, `excludes`, `compatible_with` or `fares` (below) |
 | `order` | `how` links only, optional integer: position of the target among the source's children (per parent). Display order, e.g. 1 = most common or recommended |
 | `score` | `fares` links only, required: -2, -1, 1 or 2 (never 0: no link means neutral) |
-| `src` | who or what made the link: free text, like node `sources` (`user`, `LLM:<model>`, ...) |
+| `src` | who or what made the link: free text, like node `sources` (a public URL, `user`, `LLM:<model>`, never a `raw/` file) |
 | `hint` | titles for people reading `git diff`; written by the tool, ignored by the build |
 
 - `how` goes from the "why" end to the "how" end, and its meaning comes from the node types: function to function is a sub-function (AND), function to solution is an alternative (OR), solution to function is a sub-function the solution brings (AND), solution to component is a part. A function's `how` targets are all functions or all solutions. A node may have several whys (a shared sub-function). Exactly one function has no why (the root), every function, solution and component must reach it, no cycles.
@@ -71,7 +80,7 @@ Canonical form: lines sorted by `type`, `from`, `to`, keys in the order `from`, 
 
 ## Editing the graph
 
-`tools/graph.py` (Python 3, standard library only) is the one way to edit nodes and links. Python is only needed to edit the graph, not to build or view it. Nodes are given by id or by a unique prefix of it.
+`tools/graph.py` (Python 3, standard library only) is the one way to edit nodes and links. Python is only needed to edit the graph, not to build or view it. Nodes are given by id or by a unique prefix of it. `--topic <name>` picks the topic (default `pen_plotter`), e.g. `python3 tools/graph.py --topic pen_plotter tree`.
 
 ```sh
 python3 tools/graph.py new "Draw on paper" --type function --source user          # the first function is the root
@@ -88,13 +97,22 @@ python3 tools/graph.py lint     # prints findings, exit 1 if any, writes nothing
 python3 tools/graph.py format   # rewrite links.jsonl canonically, refresh hints
 ```
 
-`new` needs `--type` and a `--why` (repeatable; `--constrains` for a constraint), so no node is born unreachable; only the first function of an empty graph may have none. `--summary` takes one line of at most 120 characters. It prints the id and writes `graph/rack-and-pinion.md` (body empty, to be written) and its links. `link` refuses duplicates, `how` cycles, type pairs the format forbids and a function that would get both function and solution targets. `lint` reports redundant `how` links (already implied through another path), nodes unreachable from the root, `requires` together with `excludes` on the same pair, functions with mixed function and solution children, constraints with no `constrains` link, parents whose how children are only partly ordered, solutions and components with no `summary`, and stale hints (run `format` after renaming a node). The build is still the full validator: run `npm run build` after editing. Tests: `python3 -m unittest discover tools`.
+`new` needs `--type` and a `--why` (repeatable; `--constrains` for a constraint), so no node is born unreachable; only the first function of an empty graph may have none. `--summary` takes one line of at most 120 characters. It prints the id and writes `knowledge_graph/rack-and-pinion.md` (body empty, to be written) and its links. `link` refuses duplicates, `how` cycles, type pairs the format forbids and a function that would get both function and solution targets. `lint` reports redundant `how` links (already implied through another path), nodes unreachable from the root, `requires` together with `excludes` on the same pair, functions with mixed function and solution children, constraints with no `constrains` link, parents whose how children are only partly ordered, solutions and components with no `summary`, node `sources` or link `src` citing a `raw/` file (a value starting with `raw/` or containing `/raw/`), and stale hints (run `format` after renaming a node). The build is still the full validator: run `npm run build` after editing. Tests: `python3 -m unittest discover tools`.
+
+## Skills
+
+Project skills live in `skills/<name>/SKILL.md` (frontmatter `name` equal to the folder name, and a `description`). Claude Code only looks in `.claude/skills/`, so each skill has a committed relative link `.claude/skills/<name> -> ../../skills/<name>`; the other folders there (`openspec-*`) are generated by OpenSpec and left alone. `npm test` fails, naming the skill, if a link is missing or a name does not match.
+
+- `/ingest`: turns one source (a URL, an `inbox.md` item or a file in `raw/`) into graph changes and, for a product page, a design file in `designs/`. It writes a raw file with a header, shows a numbered plan and changes the graph only after you approve it, then runs lint, build and tests. It never commits.
+
+`inbox.md` holds one source per line, optionally prefixed by its topic (`pen_plotter: https://...`; the default is `pen_plotter`). `/ingest` removes a line once the source has its raw file.
 
 ## Build
 
 ```sh
 npm install
-npm run build   # graph/ -> graph.json
+npm run build             # topics/pen_plotter/knowledge_graph -> topics/pen_plotter/graph.json
+npm run build -- <topic>  # another topic
 npm test
 ```
 
@@ -105,9 +123,11 @@ The build prints every error and writes nothing if validation fails.
 A static page (plain HTML and ES modules, no build step) to browse the graph and build a design from it.
 
 ```sh
-npm run build   # refresh graph.json
+npm run build   # refresh topics/pen_plotter/graph.json
 npm run serve   # prints http://localhost:8080/viewer/ (pass a port: npm run serve -- 9000)
 ```
+
+The viewer shows the `pen_plotter` topic; add `?topic=<name>` to open another one (`/viewer/?topic=<name>`). The server never serves `topics/*/raw/`.
 
 ![Viewer with a design: the design tree on the left, the design overview on the right](docs/design-overview.png)
 
@@ -123,17 +143,17 @@ One full-width page, no tabs, no top bar and no modal:
 
 ### The design document
 
-Your design is one JSON document, separate from the graph and from the URL: id, name, intent, a value for each constraint you care about, and per function a `status` (`open`, `exploring`, `decided`), a `choice`, a `shortlist`, `rejected` solutions with a reason, and `notes`. It changes only through the buttons above, is saved in the browser's `localStorage` after every edit, and can be undone (back to when the page was opened; the history is not kept across reloads).
+Your design is one JSON document, separate from the graph and from the URL: id, name, topic, intent, a value for each constraint you care about, and per function a `status` (`open`, `exploring`, `decided`), a `choice`, a `shortlist`, `rejected` solutions with a reason, and `notes`. It changes only through the buttons above, is saved in the browser's `localStorage` after every edit, and can be undone (back to when the page was opened; the history is not kept across reloads).
 
 ```json
-{ "format": 1, "id": "d-3f9a1c2e", "name": "My plotter", "intent": "A quiet A3 plotter",
+{ "format": 1, "topic": "pen_plotter", "id": "d-3f9a1c2e", "name": "My plotter", "intent": "A quiet A3 plotter",
   "constraints": { "2cc55003": "A4, sometimes A3" },
   "functions": { "854ac5e5": { "status": "decided", "choice": "1f4df7b0",
     "shortlist": ["2e099434"], "rejected": [{ "id": "a316aecc", "reason": "too wobbly" }], "notes": "" } } }
 ```
 
 - A solution can only be chosen, shortlisted or rejected under a function it belongs to; one choice per function. Choosing an excluded solution is allowed and shows as a conflict. Entries of functions that are not reached by your choices are kept, and count again when they are.
-- **Export** downloads `<name>.design.json`; **Import…** replaces the current design with such a file (undoable). Unknown node ids and invalid entries are dropped, with a notice naming them; a file that is not a design is refused. Use this to keep a copy or move a design between browsers.
+- **Export** downloads `<name>.design.json`; **Import…** replaces the current design with such a file (undoable). Unknown node ids and invalid entries are dropped, with a notice naming them; a file that is not a design, or that names another `topic`, is refused (the design is unchanged). The `topic` field is optional on import; older files without it are taken as belonging to the current topic. The saved design is kept per topic in `localStorage` (`dse.design.<topic>`). Use this to keep a copy or move a design between browsers.
 - If browser storage is blocked, the page works with the design in memory and says it will not be kept.
 
 The URL hash holds the view only, so reload, sharing and the back button work: `#/?view=<id>&fold=<id>,<id>&peek=<id>,<id>` (open node, collapsed functions, peeked solutions). Old forms still open the page: `#/design`, `#/graph`, `#/selection` and `#/browse/<node-id>` (as `view=<node-id>`); a `pick=` list is ignored with a notice, since choices now live in the design. Unknown ids in the hash are ignored with a notice.
@@ -144,10 +164,10 @@ The viewer makes no LLM calls. A written brief for a design comes from an AI out
 
 1. Build a design, expand "Prompt for an AI brief" in the overview and press "Copy prompt".
 2. Paste it into any AI and save its answer as a Markdown file, e.g. `brief.md`.
-3. Press **Export** and store the brief for that design file: `npm run brief -- save my-plotter.design.json brief.md --model <model name>`.
+3. Press **Export** and store the brief for that design file: `npm run brief -- save my-plotter.design.json brief.md --model <model name>` (add `--topic <name>` for another topic; a design file naming a different topic is refused).
 
 Reload the page: the brief is shown in the overview with the model name.
 
-Cache layout: `briefs/<design id>.md` (frontmatter `design_id`, `design_name`, `content_hash`, `model`, `prompt_version`, `created`, then the Markdown) and `briefs/index.json` mapping each design id to its file. The brief stays attached to the design while you edit it; saving again for the same design replaces it. `save` fails, and writes nothing, if the design file names a node that is not in `graph.json` or holds an entry that does not fit it. The prompt template is `prompts/brief.md`.
+Cache layout: `topics/<topic>/briefs/<design id>.md` (frontmatter `design_id`, `design_name`, `content_hash`, `model`, `prompt_version`, `created`, then the Markdown) and `topics/<topic>/briefs/index.json` mapping each design id to its file. The brief stays attached to the design while you edit it; saving again for the same design replaces it. `save` fails, and writes nothing, if the design file names a node that is not in the topic's `graph.json` or holds an entry that does not fit it. The prompt template is `prompts/brief.md`.
 
 A brief is marked **stale** when the design changed after it was saved (a choice, shortlist, rejection, note, constraint value, name or intent), or when the title, body, sources, `requires` or `excludes` of a chosen node changed. Opening, collapsing and peeking never make it stale. The prompt box is then shown again so a new brief can be made. A New design has no brief.

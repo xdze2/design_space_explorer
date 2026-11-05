@@ -6,11 +6,15 @@ A command-line tool, the single supported way to edit graph data. It creates nod
 ## Requirements
 
 ### Requirement: Node creation
-The tool SHALL create a node file with a new id that is unique in the graph, the given title, type (`function`, `solution`, `component` or `constraint`) and sources, and an empty body, and print the id. The file SHALL be placed flat under `graph/` and named from the title, with a numeric suffix if the name is taken. Every node except a constraint SHALL be given a why (`--why <id>`), which creates the `how` link from that node to the new one. A constraint SHALL be given `--constrains <id>` instead. A function with no why SHALL be accepted only if the graph has no root yet.
+The tool SHALL work on one topic's knowledge graph, chosen with `--topic <name>` (default `pen_plotter`, same name rules as the build). It SHALL create a node file with a new id that is unique in the graph, the given title, type (`function`, `solution`, `component` or `constraint`) and sources, and an empty body, and print the id. The file SHALL be placed flat under `topics/<topic>/knowledge_graph/` and named from the title, with a numeric suffix if the name is taken. Every node except a constraint SHALL be given a why (`--why <id>`), which creates the `how` link from that node to the new one. A constraint SHALL be given `--constrains <id>` instead. A function with no why SHALL be accepted only if the graph has no root yet.
 
 #### Scenario: New option under a decision
 - **WHEN** the tool is run to create a solution titled "Rack and pinion" with `--why` a function
-- **THEN** `graph/rack-and-pinion.md` exists with a fresh `id`, and `links.jsonl` has a `how` link from the function to the new node
+- **THEN** `topics/pen_plotter/knowledge_graph/rack-and-pinion.md` exists with a fresh `id`, and `links.jsonl` in the same folder has a `how` link from the function to the new node
+
+#### Scenario: Other topic
+- **WHEN** the tool is run with `--topic other` on a solution
+- **THEN** the file is written under `topics/other/knowledge_graph/` and the `pen_plotter` topic is untouched
 
 #### Scenario: Missing parent
 - **WHEN** a non-constraint node is requested without a why, and the graph already has a root
@@ -33,7 +37,7 @@ The tool SHALL create a node file with a new id that is unique in the graph, the
 - **THEN** the tool fails naming the id and writes nothing
 
 ### Requirement: Link editing
-The tool SHALL add and remove links of the five types with `link` and `unlink` (`--how`, `--constrains`, `--requires`, `--excludes`, `--compatible-with`); `link --how` SHALL also accept `--order N` (an integer) to record the position of the new link among its parent's children. Nodes SHALL be addressed by id or by an unambiguous id prefix; an ambiguous or unknown reference SHALL fail. Adding a link SHALL record a `src` (default `user`, settable), and refuse a duplicate, a type pair the format forbids, a `how` link that would create a cycle, and a `how` link that would mix function and solution targets under one function. Every write SHALL leave `links.jsonl` canonical.
+The tool SHALL add and remove links of the six types with `link` and `unlink` (`--how`, `--constrains`, `--requires`, `--excludes`, `--compatible-with`, `--fares`); `link --how` SHALL also accept `--order N` (an integer) to record the position of the new link among its parent's children, and `link --fares` SHALL require `--score N` (−2, −1, 1 or 2), which it records on the new `fares` links. `link --fares` on an existing `fares` link SHALL replace its score. Nodes SHALL be addressed by id or by an unambiguous id prefix; an ambiguous or unknown reference SHALL fail. Adding a link SHALL record a `src` (default `user`, settable), and refuse a duplicate, a type pair the format forbids, a `how` link that would create a cycle, and a `how` link that would mix function and solution targets under one function. Every write SHALL leave `links.jsonl` canonical.
 
 #### Scenario: Add a second parent
 - **WHEN** a `how` link is added to a function that already has one
@@ -69,6 +73,19 @@ The tool SHALL add and remove links of the five types with `link` and `unlink` (
 - **WHEN** `--order` is given and no `--how` link is requested
 - **THEN** the tool fails and the file is unchanged
 
+#### Scenario: Fares with a score
+- **WHEN** `link <CoreXY> --fares <Budget> --score -1` is run
+- **THEN** the new line is a `fares` link with `"score":-1` between `type` and `src`
+
+#### Scenario: Fares without a score
+- **WHEN** `--fares` is given without `--score`, or with `--score 0`
+- **THEN** the tool fails and the file is unchanged
+
+#### Scenario: Rescore
+- **GIVEN** `CoreXY` fares −1 on `Budget`
+- **WHEN** `link <CoreXY> --fares <Budget> --score -2` is run
+- **THEN** the link's score is −2 and there is still one such line
+
 ### Requirement: Readable hints
 The tool SHALL write a `hint` on every link it writes, built from the node titles (for example `GT2 belt > Drive type`), and a `format` command SHALL rewrite the whole links file in canonical form with all hints refreshed from the current titles.
 
@@ -96,7 +113,7 @@ The tool SHALL print the `how` tree from the root as an indented text outline, o
 - **THEN** the solutions are labelled as alternatives (OR)
 
 ### Requirement: Lint
-The tool SHALL report, without modifying anything: `how` links implied by another path, nodes unreachable from the root, `requires` and `excludes` between the same pair, links whose `hint` is out of date, functions with mixed function and solution children, constraints with no `constrains` link, and nodes whose `how` children are partly ordered (some links with `order`, some without). It SHALL exit non-zero if it found anything, and print one line per finding.
+The tool SHALL report, without modifying anything: `how` links implied by another path, nodes unreachable from the root, `requires` and `excludes` between the same pair, links whose `hint` is out of date, functions with mixed function and solution children, constraints with no `constrains` link, nodes whose `how` children are partly ordered (some links with `order`, some without), and solutions or components with no `summary`. It SHALL exit non-zero if it found anything, and print one line per finding.
 
 #### Scenario: Redundant parent link
 - **GIVEN** B is a how-child of A, C is a how-child of B, and C also has a direct `how` link from A
@@ -118,6 +135,10 @@ The tool SHALL report, without modifying anything: `how` links implied by anothe
 #### Scenario: Partly ordered children
 - **GIVEN** a node with three `how` links of which one has an `order`
 - **WHEN** lint runs
+- **THEN** lint reports the node
+
+#### Scenario: Missing summary
+- **WHEN** a solution has no `summary`
 - **THEN** lint reports the node
 
 #### Scenario: Clean graph
@@ -145,3 +166,14 @@ The tool SHALL provide `order <parent> <child> <child> ...`, which sets `order` 
 - **GIVEN** a function with two whys
 - **WHEN** the order is set under one why
 - **THEN** its link under the other why is unchanged
+
+### Requirement: Summary at creation
+`new` SHALL accept `--summary TEXT` and write it as the node's `summary` frontmatter field, refusing text with a line break or longer than 120 characters before writing anything.
+
+#### Scenario: New node with a summary
+- **WHEN** `new "Rack and pinion" --type solution --why <fn> --summary "A gear on a toothed rack"` is run
+- **THEN** the new file's frontmatter has `summary: A gear on a toothed rack`
+
+#### Scenario: Summary too long
+- **WHEN** `--summary` is longer than 120 characters
+- **THEN** the tool fails and writes nothing

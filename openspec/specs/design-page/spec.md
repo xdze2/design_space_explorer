@@ -70,7 +70,7 @@ The viewer SHALL be one full-width page with no tabs and no top bar: a left pane
 - **THEN** the graph panel stays at the same scroll position
 
 ### Requirement: Node panel content
-The node panel SHALL show, in order: the breadcrumb, the node's type icon, title, type, confidence and id, body as Markdown and sources, context (why; for a solution the other solutions of its function), implications (what it brings, requires, excludes, what constrains it), its status in the design, a what-if preview when not in the design, then the edit buttons. Every node named SHALL be a link that opens it.
+The node panel SHALL show, in order: the breadcrumb, the node's type icon and title, for a solution or component a card header (picture or tile, summary, tradeoff badges), for other nodes the summary when set, the type, confidence and id, a "Details" disclosure holding the body as Markdown and the sources, context (why; for a solution the other solutions of its function), implications (what it brings, requires, excludes, what constrains it), its status in the design, a what-if preview when not in the design, then the edit buttons. The "Details" disclosure SHALL be collapsed when the node has a summary and open when it has none. Every node named SHALL be a link that opens it.
 
 #### Scenario: Open a solution
 - **WHEN** the user opens `CoreXY`
@@ -85,6 +85,16 @@ The node panel SHALL show, in order: the breadcrumb, the node's type icon, title
 - **WHEN** a node body contains HTML tags
 - **THEN** they are shown as text
 
+#### Scenario: Card header and collapsed body
+- **GIVEN** `CoreXY` has a summary, a picture and `fares` links
+- **WHEN** the user opens it
+- **THEN** the picture, summary and badges are shown under the title and the body is hidden in a collapsed "Details" disclosure that opens on click
+
+#### Scenario: No summary
+- **GIVEN** a solution without a summary
+- **WHEN** the user opens it
+- **THEN** the "Details" disclosure is open
+
 ### Requirement: Breadcrumb path
 The breadcrumb SHALL follow the why-path through active functions and chosen solutions when one exists, and otherwise the first why at each step.
 
@@ -94,7 +104,7 @@ The breadcrumb SHALL follow the why-path through active functions and chosen sol
 - **THEN** the breadcrumb goes through `Move the pen in XY › Single-rail cantilever`
 
 ### Requirement: Status in the design
-For a function the panel SHALL show its status, choice, shortlist, rejected solutions with their reasons and notes, and list its solutions each with its state (chosen, shortlisted, rejected, excluded by, required by, open) and buttons. For a solution it SHALL show its state under its function, with the reason when excluded, required or rejected. For a constraint it SHALL show its value in the design.
+For a function the panel SHALL show its status, choice, shortlist, rejected solutions with their reasons and notes, and show its solutions as a grid of cards, each with its state (chosen, shortlisted, rejected, excluded by, required by, open) and its buttons. For a solution it SHALL show its state under its function, with the reason when excluded, required or rejected. For a constraint it SHALL show its value in the design and the solutions that fare on it, grouped as doing well (positive score) and doing badly (negative score).
 
 #### Scenario: Excluded reason
 - **GIVEN** `CoreXY` is chosen
@@ -105,6 +115,19 @@ For a function the panel SHALL show its status, choice, shortlist, rejected solu
 - **GIVEN** `Solenoid pen lift` was rejected with reason "too loud"
 - **WHEN** the user opens it
 - **THEN** the panel shows rejected and "too loud"
+
+#### Scenario: Function shows cards
+- **WHEN** the user opens `Move the pen in XY`
+- **THEN** each of its solutions is shown as a card with its picture or tile, summary, badges, state and Choose / Shortlist / Reject buttons, in the function's `how` order
+
+#### Scenario: Choose from a card
+- **WHEN** the user presses Choose on the `CoreXY` card of `Move the pen in XY`
+- **THEN** `CoreXY` is chosen and its card is shown as chosen
+
+#### Scenario: Constraint lists how solutions fare
+- **GIVEN** `CoreXY` fares −1 and `H-bot` fares +1 on `Budget`
+- **WHEN** the user opens `Budget`
+- **THEN** the panel lists `H-bot` as doing well and `CoreXY` as doing badly, each a link
 
 ### Requirement: Edit buttons
 The node panel SHALL be the only place that edits the design (besides the overview's name, intent and file buttons). For a solution it SHALL offer Choose or Unchoose, Shortlist or Unshortlist, Reject (asking for a reason in the panel) or Unreject; for a function a notes field and the same buttons per listed solution; for a constraint a value field. An Undo button SHALL be available whenever there is something to undo.

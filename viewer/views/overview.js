@@ -14,10 +14,10 @@ async function fetchText(url) {
 
 // Cached brief for the design, or null (a missing index means no briefs).
 async function loadBrief(graph, design) {
-  const index = await fetchText('../briefs/index.json').then(JSON.parse, () => ({}));
+  const index = await fetchText(`${graph.base}briefs/index.json`).then(JSON.parse, () => ({}));
   const entry = index[designKey(design)];
   if (!entry) return null;
-  const { meta, body } = parseBrief(await fetchText(`../briefs/${entry.file}`));
+  const { meta, body } = parseBrief(await fetchText(`${graph.base}briefs/${entry.file}`));
   return { meta, body, stale: meta.content_hash !== contentHash(graph, design) };
 }
 

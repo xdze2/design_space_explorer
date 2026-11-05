@@ -8,7 +8,7 @@ import { contentHash, parseBrief } from '../viewer/brief.js';
 import { emptyDesign, choose, reject } from '../viewer/design.js';
 import { idByTitle } from './helpers.mjs';
 
-const data = JSON.parse(readFileSync(new URL('../graph.json', import.meta.url)));
+const data = JSON.parse(readFileSync(new URL('../topics/pen_plotter/graph.json', import.meta.url)));
 const graph = toGraph(data);
 const id = idByTitle(data.nodes);
 const MOVE = id('Move the pen in XY');
@@ -27,7 +27,7 @@ test('saveBrief: writes file and index, replaces on second save', async () => {
   const root = tempRoot();
   const d = design();
   const key = await saveBrief({ root, graph, raw: d, text: 'First', model: 'm1' });
-  const file = join(root, 'briefs', `${key}.md`);
+  const file = join(root, 'topics/pen_plotter/briefs', `${key}.md`);
   assert.equal(key, d.id);
   const text = read(file, 'utf8');
   assert.match(text, new RegExp(`^---\\ndesign_id: ${d.id}\\ndesign_name: My: plotter line two\\ncontent_hash: \\w+\\nmodel: m1\\nprompt_version: 3\\n`));
@@ -37,15 +37,15 @@ test('saveBrief: writes file and index, replaces on second save', async () => {
   await saveBrief({ root, graph, raw: d2, text: 'Second', model: 'm2' });
   assert.match(read(file, 'utf8'), /model: m2[\s\S]*Second/);
   assert.equal(parseBrief(read(file, 'utf8')).meta.content_hash, contentHash(graph, d2));
-  assert.deepEqual(JSON.parse(read(join(root, 'briefs/index.json'), 'utf8')), { [key]: { file: `${key}.md` } });
-  assert.equal(readdirSync(join(root, 'briefs')).length, 2);
+  assert.deepEqual(JSON.parse(read(join(root, 'topics/pen_plotter/briefs/index.json'), 'utf8')), { [key]: { file: `${key}.md` } });
+  assert.equal(readdirSync(join(root, 'topics/pen_plotter/briefs')).length, 2);
 });
 
 test('saveBrief: unknown id throws and writes nothing', async () => {
   const root = tempRoot();
   const raw = { ...design(), functions: { ...design().functions, 'nope/x': { choice: COREXY } } };
   await assert.rejects(saveBrief({ root, graph, raw, text: 't' }), /nope\/x/);
-  assert.ok(!existsSync(join(root, 'briefs')));
+  assert.ok(!existsSync(join(root, 'topics/pen_plotter/briefs')));
 });
 
 test('saveBrief: an invalid entry, a missing id and an empty design write nothing', async () => {
@@ -55,5 +55,14 @@ test('saveBrief: an invalid entry, a missing id and an empty design write nothin
   const { id: _omit, ...noId } = design();
   await assert.rejects(saveBrief({ root, graph, raw: noId, text: 't' }), /"id"/);
   await assert.rejects(saveBrief({ root, graph, raw: emptyDesign(), text: 't' }), /Empty design/);
-  assert.ok(!existsSync(join(root, 'briefs')));
+  assert.ok(!existsSync(join(root, 'topics/pen_plotter/briefs')));
+});
+
+test('saveBrief: a design for another topic is refused, an invalid topic too', async () => {
+  const root = tempRoot();
+  await assert.rejects(saveBrief({ root, graph, raw: { ...design(), topic: 'other' }, text: 't' }), /topic "other"/);
+  await assert.rejects(saveBrief({ root, graph, raw: design(), text: 't', topic: '../x' }), /Invalid topic/);
+  assert.ok(!existsSync(join(root, 'topics')));
+  await saveBrief({ root, graph, raw: { ...design(), topic: 'other' }, text: 't', topic: 'other' });
+  assert.ok(existsSync(join(root, 'topics/other/briefs/index.json')));
 });

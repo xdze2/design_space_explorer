@@ -20,7 +20,7 @@ createServer(async (req, res) => {
   if (path === '/') path = '/viewer/index.html';
   if (path.endsWith('/')) path += 'index.html';
   const file = join(root, path);
-  if (!file.startsWith(root) || file.startsWith(join(root, 'raw')) || file.startsWith(join(root, 'node_modules'))) {
+  if (!file.startsWith(root) || /^\/topics\/[^/]+\/raw(\/|$)/.test(path) || file.startsWith(join(root, 'node_modules'))) {
     res.writeHead(403).end('forbidden');
     return;
   }

@@ -1,5 +1,5 @@
 import { parseHash, buildHash } from './hash.js';
-import { analyzeDesign } from './design.js';
+import { analyzeDesign, DEFAULT_TOPIC, TOPIC_RE } from './design.js';
 import { createStore } from './store.js';
 import { render as renderGraph } from './views/graph.js';
 import { render as renderOverview } from './views/overview.js';
@@ -14,8 +14,16 @@ let store;
 let route = null;
 let shownView;
 
-async function load() {
-  const res = await fetch('../graph.json');
+// The topic comes from ?topic=<name>; its files are under ../topics/<name>/.
+function topicFromUrl() {
+  const topic = new URLSearchParams(location.search).get('topic') ?? DEFAULT_TOPIC;
+  if (!TOPIC_RE.test(topic)) throw new Error(`"${topic}" is not a valid topic name (graph.json not loaded)`);
+  return topic;
+}
+
+async function load(topic) {
+  const base = `../topics/${topic}/`;
+  const res = await fetch(`${base}graph.json`);
   if (!res.ok) throw new Error(`graph.json: HTTP ${res.status}`);
   const data = await res.json().catch((e) => {
     throw new Error(`graph.json is not valid JSON (${e.message})`);
@@ -23,7 +31,7 @@ async function load() {
   if (!Array.isArray(data?.nodes)) throw new Error('graph.json has no "nodes" array');
   const byId = new Map(data.nodes.map((n) => [n.id, n]));
   if (!byId.has(data.root)) throw new Error('graph.json has no valid "root" id');
-  return { nodes: data.nodes, byId, rootId: data.root };
+  return { nodes: data.nodes, byId, rootId: data.root, topic, base };
 }
 
 // localStorage can throw on access (blocked site data), so even looking at it is guarded.
@@ -76,8 +84,9 @@ addEventListener('keydown', (e) => {
 });
 
 try {
-  graph = await load();
-  store = createStore(graph, { storage: browserStorage() });
+  const topic = topicFromUrl();
+  graph = await load(topic);
+  store = createStore(graph, { storage: browserStorage(), topic });
   // Text fields commit on change; redrawing then could swallow the click that caused the blur, so only refresh Undo.
   store.subscribe(({ quiet }) => {
     if (!quiet) return render();

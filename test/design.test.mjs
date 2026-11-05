@@ -7,7 +7,7 @@ import {
 } from '../viewer/design.js';
 import { idByTitle } from './helpers.mjs';
 
-const data = JSON.parse(readFileSync(new URL('../graph.json', import.meta.url)));
+const data = JSON.parse(readFileSync(new URL('../topics/pen_plotter/graph.json', import.meta.url)));
 const graph = { nodes: data.nodes, byId: new Map(data.nodes.map((n) => [n.id, n])), rootId: data.root };
 const id = idByTitle(data.nodes);
 const MOVE = id('Move the pen in XY');
@@ -263,4 +263,16 @@ test('why path: first why when nothing is chosen, root has none, constraint ends
   assert.deepEqual(whyPath(graph, a, data.root), []);
   assert.deepEqual(whyPath(graph, a, TRANSMIT).slice(0, 2), [data.root, MOVE]);
   assert.deepEqual(whyPath(graph, a, PAPER).at(-1), graph.byId.get(PAPER).constrains[0]);
+});
+
+test('topic: kept by clean when valid, absent otherwise, and carried by emptyDesign', () => {
+  assert.equal(clean(graph, { functions: {}, topic: 'pen_plotter' }).design.topic, 'pen_plotter');
+  const old = clean(graph, { functions: {} });
+  assert.equal('topic' in old.design, false);
+  assert.deepEqual(old.dropped, []);
+  const bad = clean(graph, { functions: {}, topic: '../x' });
+  assert.equal('topic' in bad.design, false);
+  assert.match(bad.dropped[0], /invalid topic/);
+  assert.equal(emptyDesign('pen_plotter').topic, 'pen_plotter');
+  assert.equal('topic' in emptyDesign(), false);
 });
