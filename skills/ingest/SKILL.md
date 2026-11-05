@@ -36,7 +36,7 @@ Sources:
 - Look first for an existing raw file of the same page (`grep -rlF <URL> topics/<topic>/raw/`, or a file named after the page title); if there is one, use it.
 - New URL: fetch it, write the raw file (a short summary of what matters for the design space, or a verbatim copy). Name summaries `web - <topic of the page>.md`. If the page cannot be fetched, ask the user to save it into `raw/` and stop.
 - File already in `raw/` without the header: add the header first, keep the body.
-- From the inbox: remove its line from `inbox.md` once the raw file exists. Leave the other lines and sections as they are.
+- From the inbox: remove its line from `inbox.md` once the raw file exists. Leave the other lines and sections as they are. If the inbox only mentions the item in passing (for example "already in the inbox"), leave it.
 
 `raw/` is git-ignored: the raw file is for this run and later runs, never a citation (step 5).
 
@@ -55,6 +55,8 @@ Run `python3 tools/graph.py --topic <topic> tree` and read the nodes the source 
 - it is a missing function, solution, component or constraint: a new node, under which why;
 - it is a relation: a new `requires`, `excludes`, `compatible_with` or `fares` link;
 - it adds nothing new: say so.
+
+Check `grep -l <URL> topics/<topic>/knowledge_graph/*.md` first: nodes may already cite the source from an earlier run. List them in the plan as already done, and do not plan work twice.
 
 Reuse before creating: a node with another name for the same thing is the same node. For a product page, also map each of the product's choices to a function and one of its solutions, and note the functions the page does not settle.
 
@@ -76,7 +78,7 @@ Write `topics/<topic>/designs/<slug>.design.json` (template below), `<slug>` fro
 - `id`: `d-` + the first 8 hex characters of `printf %s <slug> | sha1sum`, so a re-ingest keeps the id.
 - `intent`: one line on the product, then its URL.
 - `constraints`: values the page states, keyed by constraint node id, as prose (`"A3; A4 and A2 versions exist"`).
-- `functions`: each function the page settles gets `"choice": <solution id>`. A function the page does not settle gets no choice and `"notes": "Not stated on the product page."` A product solution missing from the graph is a plan item (new node); the design chooses it once it exists.
+- `functions`: each function the page settles gets `"choice": <solution id>`. A function the page does not settle gets no choice and `"notes": "Not stated on the product page."` (this includes sub-functions of a chosen solution, such as the pen pressure, and functions where the page allows several readings: state the open question in the note, do not guess) A product solution missing from the graph is a plan item (new node); the design chooses it once it exists.
 
 ### 7. Check and report
 
@@ -110,6 +112,7 @@ Design file
 Nothing new
 - <finding>: already in <node id> <title>
 Questions
+- <a finding that fits no link, such as a score for a lone component: ask whether to put it in the node body instead>
 - <anything you could not decide>
 ```
 

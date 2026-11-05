@@ -45,3 +45,10 @@ See proposal.md for the motivation and specs/ for the requirements. Current stat
 ## Migration Plan
 
 No data migration. The source fix and the new lint rule land together so lint stays clean. Rollback is `git revert`.
+
+## Open concept questions from the first run (EasyDraw V4)
+
+- **Environment-provided choices.** "Hold the drawing surface" lists a bed board, an open frame and a wall frame, but not whether the surface belongs to the machine or to its environment (the table holds the paper). A design may need "provided by the environment" as a choice of its own.
+- **Sub-functions of a chosen solution** (the pen pressure under the servo pen lift) are settled by the product only in practice; the page is silent. Should a design carry them, or only top-level functions?
+- **Scores for a lone component.** A `fares` link is relative to siblings; a component with no sibling (Delrin V-wheels) gets its tradeoffs in its body instead.
+- **Prior citations.** Earlier runs cite a source in several nodes without a design file; the skill now checks for them before planning.

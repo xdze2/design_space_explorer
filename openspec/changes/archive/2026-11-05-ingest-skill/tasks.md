@@ -16,9 +16,9 @@
 
 ## 3. First run: EasyDraw V4
 
-- [ ] 3.1 Run `/ingest` on the EasyDraw V4 inbox item: header on its raw file, classified as a product page, plan shown and approved by the user. Verify: nothing under `knowledge_graph/` or `designs/` changed before the approval.
-- [ ] 3.2 Apply the approved plan: graph edits with `tools/graph.py`, `topics/pen_plotter/designs/easydraw-v4.design.json`, inbox line removed. Verify: lint clean, `npm run build` and `npm test` pass (the design test now checks the EasyDraw file), the design imports in the viewer.
-- [ ] 3.3 Revise `skills/ingest/SKILL.md` from what the run showed was unclear or missing, and list in the change's design.md any concept question it raised for the design library. Verify: the user reviews the diff of `SKILL.md`.
+- [x] 3.1 Run `/ingest` on the EasyDraw V4 inbox item: header on its raw file, classified as a product page, plan shown and approved by the user. Verify: nothing under `knowledge_graph/` or `designs/` changed before the approval.
+- [x] 3.2 Apply the approved plan: graph edits with `tools/graph.py`, `topics/pen_plotter/designs/easydraw-v4.design.json`, inbox line removed. Verify: lint clean, `npm run build` and `npm test` pass (the design test now checks the EasyDraw file), the design imports in the viewer.
+- [x] 3.3 Revise `skills/ingest/SKILL.md` from what the run showed was unclear or missing, and list in the change's design.md any concept question it raised for the design library. Verify: the user reviews the diff of `SKILL.md`.
 
 ## Workflow follow-up
 

@@ -396,7 +396,7 @@
       "confidence": "low",
       "summary": "The classic gantry: a motor rides on the X carriage and a rail runs along each side of the bed",
       "abbr": "CART",
-      "body": "**Why choose it.** The easiest layout to build and tune: one motor rides on the moving X carriage, one fixed motor drives Y, with a rail on each side of the bed. It is the layout of most hobby reference builds and is well documented.\n\n**Tradeoffs.** Moving mass is higher because a motor rides on the gantry. The two rails must be parallel and equally preloaded over their whole length, and a Y axis driven from one side wants to rack. Besides the drive, the transmission, the guides (the two rails are the guides of the Y axis) and a way to hold the surface, it therefore brings a sub-function of its own: keeping the gantry square. It costs less than CoreXY, but the motor riding on the gantry makes it accelerate more slowly.",
+      "body": "**Why choose it.** The easiest layout to build and tune: one motor rides on the moving X carriage, one fixed motor drives Y, with a rail on each side of the bed. It is the layout of most hobby reference builds and is well documented.\n\n**Tradeoffs.** Moving mass is higher because a motor rides on the gantry. The two rails must be parallel and equally preloaded over their whole length, and a Y axis driven from one side wants to rack. Besides the drive, the transmission, the guides (the two rails are the guides of the Y axis) and a way to hold the surface, it therefore brings a sub-function of its own: keeping the gantry square. It costs less than CoreXY, but the motor riding on the gantry makes it accelerate more slowly. The EasyDraw V4 shows the fix for racking and flex: a full frame supported on all four sides, where its V3 was a single-side cantilever limited to A4.",
       "why": [
         "854ac5e5"
       ],
@@ -535,16 +535,19 @@
       "type": "solution",
       "sources": [
         "LLM:claude-sonnet",
-        "LLM:claude-opus-5-5"
+        "LLM:claude-opus-5-5",
+        "https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled"
       ],
       "confidence": "low",
       "summary": "Wheels run in the groove of the extrusion that is also the frame: the cheapest guide, less stiff than rails",
       "abbr": "VSLT",
-      "body": "**Why choose it.** The cheapest guide and the easiest to source: wheels ride in the groove of the extrusion that is also the frame, with eccentric nuts to adjust the preload.\n\n**Tradeoffs.** It needs careful adjustment to remove play without binding, and it is less stiff than rails. Wheels wear and flat-spot over time, but for a pen load they last. Residual play and flex show up as wobble in the lines.",
+      "body": "**Why choose it.** The cheapest guide and the easiest to source: wheels ride in the groove of the extrusion that is also the frame, with eccentric nuts to adjust the preload.\n\n**Tradeoffs.** It needs careful adjustment to remove play without binding, and it is less stiff than rails. Wheels wear and flat-spot over time, but for a pen load they last. Residual play and flex show up as wobble in the lines. The EasyDraw V4 uses them on an aluminium extrusion frame with a metal gantry, supported on all four sides (see Delrin V-wheels).",
       "why": [
         "b6e812c9"
       ],
-      "how": [],
+      "how": [
+        "fc715b50"
+      ],
       "constrains": [],
       "constrained_by": [],
       "requires": [],
@@ -1759,6 +1762,28 @@
           "score": 1
         }
       ]
+    },
+    {
+      "id": "fc715b50",
+      "title": "Delrin V-wheels",
+      "type": "component",
+      "sources": [
+        "https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled",
+        "LLM:claude-sonnet-5-5"
+      ],
+      "confidence": "low",
+      "summary": "Delrin (acetal) V-wheels that run in the extrusion groove: cheap and quiet, but play and wear limit repeatability",
+      "body": "Delrin (acetal) wheels with a V profile, riding in the groove of the aluminium extrusion. The EasyDraw V4 moves on Delrin V-wheels with NEMA 17 steppers.\n\n**Why choose it.** Cheap, quiet and self-lubricating, with no rail to buy: the extrusion is the track.\n\n**Tradeoffs.** Repeatability depends on play and wear: the wheels need their preload set once, and the plastic slowly flat-spots, which is fine for a pen load.",
+      "why": [
+        "3bd9d7e2"
+      ],
+      "how": [],
+      "constrains": [],
+      "constrained_by": [],
+      "requires": [],
+      "excludes": [],
+      "compatible_with": [],
+      "fares": []
     }
   ]
 }

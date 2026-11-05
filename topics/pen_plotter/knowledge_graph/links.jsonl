@@ -123,6 +123,7 @@
 {"from":"328cfb43","to":"6d52ba8e","type":"how","order":2,"src":"LLM:claude-opus-5-5","hint":"H-bot > Transmit motor motion"}
 {"from":"328cfb43","to":"7279c5e2","type":"how","order":1,"src":"LLM:claude-opus-5-5","hint":"H-bot > Drive the axes"}
 {"from":"328cfb43","to":"b6e812c9","type":"how","order":3,"src":"LLM:claude-opus-5-5","hint":"H-bot > Guide the axes"}
+{"from":"3bd9d7e2","to":"fc715b50","type":"how","src":"https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled","hint":"V-slot wheels on aluminium extrusion > Delrin V-wheels"}
 {"from":"48664224","to":"018d772f","type":"how","order":1,"src":"LLM:claude-sonnet","hint":"Keep the gantry square > Second synchronized Y motor"}
 {"from":"48664224","to":"1203960b","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Keep the gantry square > Stiff cross rod"}
 {"from":"55269563","to":"2798fd6f","type":"how","order":2,"src":"LLM:claude-sonnet","hint":"Draw a design with a pen or brush > Lift and lower the pen"}

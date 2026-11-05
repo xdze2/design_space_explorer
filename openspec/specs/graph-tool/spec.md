@@ -113,7 +113,7 @@ The tool SHALL print the `how` tree from the root as an indented text outline, o
 - **THEN** the solutions are labelled as alternatives (OR)
 
 ### Requirement: Lint
-The tool SHALL report, without modifying anything: `how` links implied by another path, nodes unreachable from the root, `requires` and `excludes` between the same pair, links whose `hint` is out of date, functions with mixed function and solution children, constraints with no `constrains` link, nodes whose `how` children are partly ordered (some links with `order`, some without), and solutions or components with no `summary`. It SHALL exit non-zero if it found anything, and print one line per finding.
+The tool SHALL report, without modifying anything: `how` links implied by another path, nodes unreachable from the root, `requires` and `excludes` between the same pair, links whose `hint` is out of date, functions with mixed function and solution children, constraints with no `constrains` link, nodes whose `how` children are partly ordered (some links with `order`, some without), solutions or components with no `summary`, and node `sources` or link `src` that cite a `raw/` path (a value starting with `raw/` or containing `/raw/`). It SHALL exit non-zero if it found anything, and print one line per finding.
 
 #### Scenario: Redundant parent link
 - **GIVEN** B is a how-child of A, C is a how-child of B, and C also has a direct `how` link from A
@@ -140,6 +140,10 @@ The tool SHALL report, without modifying anything: `how` links implied by anothe
 #### Scenario: Missing summary
 - **WHEN** a solution has no `summary`
 - **THEN** lint reports the node
+
+#### Scenario: Raw citation
+- **WHEN** a node has `sources: ["raw/notes.md", "user"]`, or a link has `src` `topics/pen_plotter/raw/notes.md`
+- **THEN** lint reports the node or the link and the cited path
 
 #### Scenario: Clean graph
 - **WHEN** lint runs on a graph with no findings

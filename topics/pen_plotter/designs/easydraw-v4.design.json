@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "topic": "pen_plotter",
+  "id": "d-b5ac602d",
+  "name": "EasyDraw V4",
+  "intent": "Assembled Maker Q pen plotter, aluminium frame, driven from Inkscape. https://www.makerq.com/products/easydraw-v4-drawing-and-writing-machine-fully-assembled",
+  "constraints": {
+    "2cc55003": "A4, A3 and A2 (same software and parts); outer sizes 550x450, 680x555 and 860x675 mm",
+    "9dbd19bc": "$285 assembled",
+    "0e78dd37": "Pens up to 17 mm diameter",
+    "f5828b1c": "Paper, notebooks, envelopes, card, any flat surface"
+  },
+  "functions": {
+    "854ac5e5": { "choice": "2e099434" },
+    "7279c5e2": { "choice": "ddbfc16b" },
+    "b6e812c9": { "choice": "3bd9d7e2" },
+    "2798fd6f": { "choice": "dcefc61b" },
+    "a2651c78": { "choice": "d4ddcf72" },
+    "6d52ba8e": { "notes": "Not stated on the product page. Belts are not mentioned." },
+    "48664224": { "notes": "Not stated on the product page." },
+    "09d91f08": { "notes": "Not stated on the product page." },
+    "f42dc3f6": { "notes": "Not stated on the product page." },
+    "20449e2e": { "notes": "Not stated on the product page. Open question: does the table hold the paper (open frame set over the media), or does the machine have its own bed plate?" }
+  }
+}
